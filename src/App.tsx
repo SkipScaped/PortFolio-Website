@@ -30,12 +30,22 @@ export default function App() {
     setCurrentDateString(date.toLocaleDateString([], { month: "short", day: "numeric" }));
   }, []);
 
+  const audioCtxRef = React.useRef<AudioContext | null>(null);
+
   const playBeep = (freq = 600, duration = 0.08) => {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        audioCtxRef.current = new AudioCtx();
+      }
+      
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
@@ -378,291 +388,334 @@ export default function App() {
             </div>
 
             {/* Immersive 3D Bento Grid and Cards */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <motion.div 
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            >
               {/* Card 1: Interactive Technology HUD with TypeScript included! */}
-              <ThreeDCard id="card_skills">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Terminal className="h-4 w-4 text-teal-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          COMPILER SKILLS
-                        </h4>
-                      </div>
-                      <span className="font-mono text-[9px] text-teal-500 font-bold uppercase">Active Dev</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2.5">
-                      {skillsData.slice(0, 10).map((skill, idx) => (
-                        <div 
-                          key={idx}
-                          onMouseEnter={() => playBeep(500 + idx * 25, 0.04)}
-                          className={`rounded-lg border p-2 text-left transition-all select-none
-                            ${theme === "dark" 
-                              ? "bg-slate-900/40 border-slate-900 hover:border-slate-800 hover:bg-slate-900" 
-                              : "bg-slate-100 hover:bg-slate-200/50 border-slate-200 hover:border-slate-300 text-slate-800"}`}
-                        >
-                          <span className="block font-sans text-[10px] font-bold">
-                            {skill.name}
-                          </span>
-                          <div className="mt-1 flex items-center justify-between">
-                            <span className="font-mono text-[9px] text-slate-500 uppercase">
-                              {skill.category}
-                            </span>
-                            <span className="font-mono text-[9px] text-indigo-500 font-bold">
-                              {skill.level}
-                            </span>
-                          </div>
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_skills">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Terminal className="h-4 w-4 text-teal-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            COMPILER SKILLS
+                          </h4>
                         </div>
-                      ))}
+                        <span className="font-mono text-[9px] text-teal-500 font-bold uppercase">Active Dev</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {skillsData.slice(0, 10).map((skill, idx) => (
+                          <div 
+                            key={idx}
+                            onMouseEnter={() => playBeep(500 + idx * 25, 0.04)}
+                            className={`rounded-lg border p-2 text-left transition-all select-none
+                              ${theme === "dark" 
+                                ? "bg-slate-900/40 border-slate-900 hover:border-slate-800 hover:bg-slate-900" 
+                                : "bg-slate-100 hover:bg-slate-200/50 border-slate-200 hover:border-slate-300 text-slate-800"}`}
+                          >
+                            <span className="block font-sans text-[10px] font-bold">
+                              {skill.name}
+                            </span>
+                            <div className="mt-1 flex items-center justify-between">
+                              <span className="font-mono text-[9px] text-slate-500 uppercase">
+                                {skill.category}
+                              </span>
+                              <span className="font-mono text-[9px] text-indigo-500 font-bold">
+                                {skill.level}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 text-[10px] font-mono text-slate-500 flex items-center justify-between">
+                      <span>TYPESCRIPT INT_MATRIX</span>
+                      <span>14_STACK_MODS</span>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 text-[10px] font-mono text-slate-500 flex items-center justify-between">
-                    <span>TYPESCRIPT INT_MATRIX</span>
-                    <span>14_STACK_MODS</span>
-                  </div>
-                </div>
-              </ThreeDCard>
+                </ThreeDCard>
+              </motion.div>
 
               {/* Card 2: Interactive Godot Sandbox Access */}
-              <ThreeDCard id="card_arcade">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Gamepad className="h-4 w-4 text-indigo-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          ENGINE HOBBY
-                        </h4>
-                      </div>
-                      <span className="font-mono text-[9px] text-indigo-500 font-bold">GODOT 3D</span>
-                    </div>
-
-                    <div className={`relative rounded-xl p-4 shadow-inner border
-                      ${theme === "dark" ? "bg-slate-950 border-slate-900" : "bg-slate-50 border-slate-200"}`}
-                    >
-                      <h5 className="font-orbitron text-xs font-bold tracking-wide text-indigo-500">
-                        Isometric 3D Platformer
-                      </h5>
-                      <p className="font-sans text-[11px] text-slate-400 mt-1">
-                        Aaliyan natively crafts physical vectors with direct emulated script parameters in Godot engine. Experience the isometric action build!
-                      </p>
-                      
-                      <div className="mt-4 space-y-1.5 font-mono text-[9px]">
-                        <div className="flex justify-between text-slate-500 font-bold">
-                          <span>WASMBIND CORE</span>
-                          <span className="text-indigo-500">SYNCHRONIZED</span>
-                        </div>
-                        <div className="h-1 w-full rounded bg-slate-900 overflow-hidden">
-                          <div className="h-full w-[95%] bg-indigo-500" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    id="btn_arcade_goto"
-                    onClick={() => { playBeep(600); setActiveTab("sandbox"); }}
-                    className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
-                      ${theme === "dark" 
-                        ? "bg-slate-900 hover:bg-indigo-600/10 border-slate-800 hover:border-indigo-500/20 text-slate-300 hover:text-indigo-400" 
-                        : "bg-slate-150 hover:bg-indigo-50 hover:border-indigo-200 text-slate-700 hover:text-indigo-600 border-slate-300"}`}
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_arcade">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
                   >
-                    <span>Launch 3D Grid Game</span>
-                    <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-indigo-500" />
-                  </button>
-                </div>
-              </ThreeDCard>
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Gamepad className="h-4 w-4 text-indigo-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            ENGINE HOBBY
+                          </h4>
+                        </div>
+                        <span className="font-mono text-[9px] text-indigo-500 font-bold">GODOT 3D</span>
+                      </div>
+
+                      <div className={`relative rounded-xl p-4 shadow-inner border
+                        ${theme === "dark" ? "bg-slate-950 border-slate-900" : "bg-slate-50 border-slate-200"}`}
+                      >
+                        <h5 className="font-orbitron text-xs font-bold tracking-wide text-indigo-500">
+                          Isometric 3D Platformer
+                        </h5>
+                        <p className="font-sans text-[11px] text-slate-400 mt-1">
+                          Aaliyan natively crafts physical vectors with direct emulated script parameters in Godot engine. Experience the isometric action build!
+                        </p>
+                        
+                        <div className="mt-4 space-y-1.5 font-mono text-[9px]">
+                          <div className="flex justify-between text-slate-500 font-bold">
+                            <span>WASMBIND CORE</span>
+                            <span className="text-indigo-500">SYNCHRONIZED</span>
+                          </div>
+                          <div className="h-1 w-full rounded bg-slate-900 overflow-hidden">
+                            <div className="h-full w-[95%] bg-indigo-500" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      id="btn_arcade_goto"
+                      onClick={() => { playBeep(600); setActiveTab("sandbox"); }}
+                      className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
+                        ${theme === "dark" 
+                          ? "bg-slate-900 hover:bg-indigo-600/10 border-slate-800 hover:border-indigo-500/20 text-slate-300 hover:text-indigo-400" 
+                          : "bg-slate-150 hover:bg-indigo-50 hover:border-indigo-200 text-slate-700 hover:text-indigo-600 border-slate-300"}`}
+                    >
+                      <span>Launch 3D Grid Game</span>
+                      <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-indigo-500" />
+                    </button>
+                  </div>
+                </ThreeDCard>
+              </motion.div>
 
               {/* Card 3: Database & ABAC Security info */}
-              <ThreeDCard id="card_database">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Database className="h-4 w-4 text-rose-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          SECURE DATABASES
-                        </h4>
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_database">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Database className="h-4 w-4 text-rose-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            SECURE DATABASES
+                          </h4>
+                        </div>
+                        <span className="font-mono text-[9px] text-rose-500 font-bold uppercase">ABAC Sec</span>
                       </div>
-                      <span className="font-mono text-[9px] text-rose-500 font-bold uppercase">ABAC Sec</span>
+
+                      <div className="p-1 space-y-3.5">
+                        <div className="flex items-start gap-2.5">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                          <p className="font-sans text-xs text-slate-400">
+                            <strong>Active Supabase DB</strong>: Advanced real-time PostgreSQL listeners, relational structural models, and Row Level Security permissions.
+                          </p>
+                        </div>
+
+                        <div className="flex items-start gap-2.5">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                          <p className="font-sans text-xs text-slate-400">
+                            <strong>Hardened Firebase Rules</strong>: Direct NoSQL collections protected by solid security rules wrapping update transitions airtight.
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="p-1 space-y-3.5">
-                      <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                        <p className="font-sans text-xs text-slate-400">
-                          <strong>Active Supabase DB</strong>: Advanced real-time PostgreSQL listeners, relational structural models, and Row Level Security permissions.
-                        </p>
-                      </div>
-
-                      <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                        <p className="font-sans text-xs text-slate-400">
-                          <strong>Hardened Firebase Rules</strong>: Direct NoSQL collections protected by solid security rules wrapping update transitions airtight.
-                        </p>
-                      </div>
+                    <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 font-mono text-[10px] text-slate-500 flex justify-between">
+                      <span>SEC_METRIC: STABLE</span>
+                      <span>POSTGRES_FIRESTORE</span>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 font-mono text-[10px] text-slate-500 flex justify-between">
-                    <span>SEC_METRIC: STABLE</span>
-                    <span>POSTGRES_FIRESTORE</span>
-                  </div>
-                </div>
-              </ThreeDCard>
+                </ThreeDCard>
+              </motion.div>
 
               {/* Card 4: Services Rendered */}
-              <ThreeDCard id="card_services">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-amber-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          SERVICES OFF_SET
-                        </h4>
-                      </div>
-                      <span className="font-mono text-[9px] text-amber-500 font-bold">RESOLVED</span>
-                    </div>
-
-                    <ul className="space-y-3 text-xs font-sans text-slate-400">
-                      <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
-                        <span className="font-bold text-slate-300 dark:text-slate-700">🛒 Full Scale E-Commerce</span>
-                        <span className="font-mono text-[9px] text-slate-500 uppercase">Operational</span>
-                      </li>
-                      <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
-                        <span className="font-bold text-slate-300 dark:text-slate-700">🎨 Premium Portfolios</span>
-                        <span className="font-mono text-[9px] text-slate-500 uppercase">Interactive</span>
-                      </li>
-                      <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
-                        <span className="font-bold text-slate-300 dark:text-slate-700">🏢 Corporate Agency Webs</span>
-                        <span className="font-mono text-[9px] text-slate-500 uppercase">High Scaled</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span className="font-bold text-slate-300 dark:text-slate-700">⚡ High Conversion designing</span>
-                        <span className="font-mono text-[9px] text-slate-500 uppercase">SEO light</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <button
-                    id="btn_proposal_goto"
-                    onClick={() => { playBeep(600); setActiveTab("proposal"); }}
-                    className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
-                      ${theme === "dark" 
-                        ? "bg-slate-900 hover:bg-amber-600/10 border-slate-800 hover:border-amber-500/20 text-slate-300 hover:text-amber-500" 
-                        : "bg-slate-150 hover:bg-amber-50 hover:border-amber-200 text-slate-700 hover:text-amber-600 border-slate-300"}`}
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_services">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
                   >
-                    <span>Direct Rates Calculator</span>
-                    <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-amber-500" />
-                  </button>
-                </div>
-              </ThreeDCard>
-
-              {/* Card 5: AI Companion Link */}
-              <ThreeDCard id="card_companion">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-emerald-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          AI CORP CLONE
-                        </h4>
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-amber-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            SERVICES OFF_SET
+                          </h4>
+                        </div>
+                        <span className="font-mono text-[9px] text-amber-500 font-bold">RESOLVED</span>
                       </div>
-                      <span className="font-mono text-[9px] text-emerald-500 font-bold uppercase">Clone Core</span>
-                    </div>
 
-                    <div className={`rounded-xl p-3 border transition-colors duration-300
-                      ${theme === "dark" ? "bg-slate-900/50 border-slate-900" : "bg-slate-100 border-slate-200"}`}
-                    >
-                      <p className="font-sans text-xs text-slate-400">
-                        Converse directly with Aaliyan's virtual hologram clone fueled by @google/genai. Request contract outlines or test database schemas natively in real time!
-                      </p>
-                      
-                      <div className="mt-3.5 flex items-center gap-1.5">
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="font-mono text-[9px] text-emerald-500 font-bold">
-                          AI CLONE CONTEXT READY
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    id="btn_companion_goto"
-                    onClick={() => { playBeep(600); setActiveTab("companion"); }}
-                    className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
-                      ${theme === "dark" 
-                        ? "bg-slate-900 hover:bg-emerald-600/10 border-slate-800 hover:border-emerald-500/20 text-slate-300 hover:text-emerald-500" 
-                        : "bg-slate-150 hover:bg-emerald-50 hover:border-emerald-200 text-slate-700 hover:text-emerald-600 border-slate-300"}`}
-                  >
-                    <span>Connect Companion Clone</span>
-                    <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-emerald-500" />
-                  </button>
-                </div>
-              </ThreeDCard>
-
-              {/* Card 6: AI / ML Goals */}
-              <ThreeDCard id="card_future">
-                <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
-                  ${theme === "dark" 
-                    ? "bg-slate-950 border-slate-800" 
-                    : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
-                      <div className="flex items-center gap-2">
-                        <Cpu className="h-4 w-4 text-purple-500" />
-                        <h4 className="font-orbitron text-xs font-bold tracking-widest">
-                          FUTURE MILESTONE
-                        </h4>
-                      </div>
-                      <span className="font-mono text-[9px] text-purple-500 font-bold">EXPLORING</span>
-                    </div>
-
-                    <div className="space-y-3 font-sans text-xs text-slate-400">
-                      <p>
-                        Aaliyan is deeply geared towards merging responsive templates with custom Artificial Intelligence:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-[11px]">
-                        <li>In-browser neural networks with TensorFlow.js.</li>
-                        <li>Intelligent agentic chat systems for e-commerce sites.</li>
-                        <li>Automated document schema analyzers running on fast servers.</li>
+                      <ul className="space-y-3 text-xs font-sans text-slate-400">
+                        <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
+                          <span className="font-bold text-slate-300 dark:text-slate-700">🛒 Full Scale E-Commerce</span>
+                          <span className="font-mono text-[9px] text-slate-500 uppercase">Operational</span>
+                        </li>
+                        <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
+                          <span className="font-bold text-slate-300 dark:text-slate-700">🎨 Premium Portfolios</span>
+                          <span className="font-mono text-[9px] text-slate-500 uppercase">Interactive</span>
+                        </li>
+                        <li className="flex items-center justify-between border-b border-dashed border-slate-800/10 pb-1 dark:border-slate-900/30">
+                          <span className="font-bold text-slate-300 dark:text-slate-700">🏢 Corporate Agency Webs</span>
+                          <span className="font-mono text-[9px] text-slate-500 uppercase">High Scaled</span>
+                        </li>
+                        <li className="flex items-center justify-between">
+                          <span className="font-bold text-slate-300 dark:text-slate-700">⚡ High Conversion designing</span>
+                          <span className="font-mono text-[9px] text-slate-500 uppercase">SEO light</span>
+                        </li>
                       </ul>
                     </div>
-                  </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 font-mono text-[9px] text-slate-500 flex justify-between">
-                    <span>AIM AREA</span>
-                    <span>AI_AND_ML_AIM</span>
+                    <button
+                      id="btn_proposal_goto"
+                      onClick={() => { playBeep(600); setActiveTab("proposal"); }}
+                      className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
+                        ${theme === "dark" 
+                          ? "bg-slate-900 hover:bg-amber-600/10 border-slate-800 hover:border-amber-500/20 text-slate-300 hover:text-amber-500" 
+                          : "bg-slate-150 hover:bg-amber-50 hover:border-amber-200 text-slate-700 hover:text-amber-600 border-slate-300"}`}
+                    >
+                      <span>Direct Rates Calculator</span>
+                      <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-amber-500" />
+                    </button>
                   </div>
-                </div>
-              </ThreeDCard>
-            </div>
+                </ThreeDCard>
+              </motion.div>
+
+              {/* Card 5: AI Companion Link */}
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_companion">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-emerald-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            AI CORP CLONE
+                          </h4>
+                        </div>
+                        <span className="font-mono text-[9px] text-emerald-500 font-bold uppercase">Clone Core</span>
+                      </div>
+
+                      <div className={`rounded-xl p-3 border transition-colors duration-300
+                        ${theme === "dark" ? "bg-slate-900/50 border-slate-900" : "bg-slate-100 border-slate-200"}`}
+                      >
+                        <p className="font-sans text-xs text-slate-400">
+                          Converse directly with Aaliyan's virtual hologram clone fueled by @google/genai. Request contract outlines or test database schemas natively in real time!
+                        </p>
+                        
+                        <div className="mt-3.5 flex items-center gap-1.5">
+                          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                          <span className="font-mono text-[9px] text-emerald-500 font-bold">
+                            AI CLONE CONTEXT READY
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      id="btn_companion_goto"
+                      onClick={() => { playBeep(600); setActiveTab("companion"); }}
+                      className={`mt-6 flex w-full items-center justify-between rounded-xl px-4 py-2.5 font-sans text-xs font-bold transition-all border group cursor-pointer
+                        ${theme === "dark" 
+                          ? "bg-slate-900 hover:bg-emerald-600/10 border-slate-800 hover:border-emerald-500/20 text-slate-300 hover:text-emerald-500" 
+                          : "bg-slate-150 hover:bg-emerald-50 hover:border-emerald-200 text-slate-700 hover:text-emerald-600 border-slate-300"}`}
+                    >
+                      <span>Connect Companion Clone</span>
+                      <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-slate-500 group-hover:text-emerald-500" />
+                    </button>
+                  </div>
+                </ThreeDCard>
+              </motion.div>
+
+              {/* Card 6: AI / ML Goals */}
+              <motion.div variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+              }}>
+                <ThreeDCard id="card_future">
+                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                    ${theme === "dark" 
+                      ? "bg-slate-950 border-slate-800" 
+                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4 text-purple-500" />
+                          <h4 className="font-orbitron text-xs font-bold tracking-widest">
+                            FUTURE MILESTONE
+                          </h4>
+                        </div>
+                        <span className="font-mono text-[9px] text-purple-500 font-bold">EXPLORING</span>
+                      </div>
+
+                      <div className="space-y-3 font-sans text-xs text-slate-400">
+                        <p>
+                          Aaliyan is deeply geared towards merging responsive templates with custom Artificial Intelligence:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-[11px]">
+                          <li>In-browser neural networks with TensorFlow.js.</li>
+                          <li>Intelligent agentic chat systems for e-commerce sites.</li>
+                          <li>Automated document schema analyzers running on fast servers.</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-800/10 dark:border-slate-900/60 font-mono text-[9px] text-slate-500 flex justify-between">
+                      <span>AIM AREA</span>
+                      <span>AI_AND_ML_AIM</span>
+                    </div>
+                  </div>
+                </ThreeDCard>
+              </motion.div>
+            </motion.div>
 
             {/* Direct Contact segment detailing WhatsApp and Github details */}
             <div className={`rounded-2xl border p-6 transition-colors duration-300 space-y-3

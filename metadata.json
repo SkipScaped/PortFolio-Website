@@ -1,6 +1,6 @@
 {
   "name": "Aaliyans | Portfolio",
-  "description": "An immersive 2.5D isometric shooter and platformer game. Battle enemies, collect coins, and upgrade your weaponry in this action-packed sandbox experience.",
+  "description": "High-performance, 2.5D interactive portfolio for Aaliyan (SkipScape). Features include an isometric game sandbox, AI companion clone, and dynamic proposal builder built with TypeScript and motion.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }
