@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { 
   Terminal, Github, Cpu, Layers, Globe, Sparkles, Code, Database, 
   Gamepad, Award, Volume2, VolumeX, Mail, ArrowUpRight, CheckCircle2,
-  Sun, Moon, PhoneCall, ExternalLink, Blocks, HeartHandshake, Laptop
+  Sun, Moon, PhoneCall, ExternalLink, Blocks, HeartHandshake, Laptop,
+  Menu, X
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import ThreeDCard from "./components/ThreeDCard";
 import GameSandbox from "./components/GameSandbox";
 import AICompanion from "./components/AICompanion";
@@ -18,6 +20,7 @@ interface ProjectItem {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"home" | "sandbox" | "proposal" | "companion">("home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [currentDateString, setCurrentDateString] = useState("");
@@ -180,41 +183,79 @@ export default function App() {
               <span>WhatsApp</span>
             </a>
 
-            {/* Tactical Live status indicator */}
-            <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 border shadow-inner transition-colors duration-300
-              ${theme === "dark" ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200"}`}
-            >
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] text-slate-400 font-bold tracking-wider uppercase">ONLINE</span>
-            </div>
+          {/* Tactical Live status indicator */}
+          <div className={`hidden lg:flex items-center gap-2 rounded-full px-3 py-1.5 border shadow-inner transition-colors duration-300
+            ${theme === "dark" ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200"}`}
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[9px] text-slate-400 font-bold tracking-wider uppercase">ONLINE</span>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => { playBeep(400); setIsMobileMenuOpen(!isMobileMenuOpen); }}
+            className={`flex md:hidden h-9 w-9 items-center justify-center rounded-lg border transition-all duration-300
+              ${theme === "dark" 
+                ? "border-slate-800 bg-slate-950/40 text-slate-400 hover:text-slate-200" 
+                : "border-slate-200 bg-white text-slate-600 hover:text-slate-900 shadow-sm"}`}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+      </div>
+
+        {/* Mobile Dropdown Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`md:hidden overflow-hidden border-t transition-colors duration-300
+                ${theme === "dark" ? "border-slate-900 bg-slate-950" : "border-slate-200 bg-white"}`}
+            >
+              <div className="flex flex-col gap-1 p-4">
+                {[
+                  { id: "home", label: "Home Base" },
+                  { id: "sandbox", label: "Game Sandbox" },
+                  { id: "proposal", label: "Proposal Builder" },
+                  { id: "companion", label: "AI Companion" }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => { 
+                      playBeep(640); 
+                      setActiveTab(tab.id as any);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between rounded-xl px-4 py-3 font-sans text-sm font-bold transition-all border
+                      ${activeTab === tab.id 
+                        ? "bg-indigo-600/10 text-indigo-500 border-indigo-500/20" 
+                        : "bg-transparent text-slate-400 border-transparent hover:text-slate-200"}`}
+                  >
+                    <span>{tab.label}</span>
+                    {activeTab === tab.id && <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/40" />}
+                  </button>
+                ))}
+                
+                {/* Mobile WhatsApp Link */}
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => { playBeep(880); setIsMobileMenuOpen(false); }}
+                  className="mt-2 flex items-center justify-center gap-2 rounded-xl border px-4 py-3 font-bold transition-all bg-gradient-to-r from-emerald-500/10 to-teal-500/5 text-emerald-500 border-emerald-500/20"
+                >
+                  <PhoneCall className="h-4 w-4" />
+                  <span>WhatsApp Contact</span>
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* 🔮 MAIN CONTENT STAGE */}
       <main className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-8 flex-1 flex flex-col">
-        {/* Render Mobile Navigation indicators */}
-        <div className={`flex md:hidden items-center justify-between gap-1 border-b pb-4 mb-6 transition-colors duration-300
-          ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}
-        >
-          {[
-            { id: "home", label: "Home" },
-            { id: "sandbox", label: "Sandbox" },
-            { id: "proposal", label: "Calculator" },
-            { id: "companion", label: "AI Core" }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => { playBeep(450); setActiveTab(tab.id as any); }}
-              className={`flex-1 text-center py-2 text-xs font-bold rounded-lg border transition-all
-                ${activeTab === tab.id 
-                  ? "bg-indigo-600/15 border-indigo-500/20 text-indigo-500 font-extrabold" 
-                  : "bg-transparent border-transparent text-slate-500"}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
 
         {/* Tab Page 1: Home base of SkipScape Bento Content */}
         {activeTab === "home" && (
