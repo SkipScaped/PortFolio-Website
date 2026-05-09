@@ -48,9 +48,10 @@ export default function App() {
 
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
@@ -269,10 +270,19 @@ export default function App() {
 
         {/* Tab Page 1: Home base of SkipScape Bento Content */}
         {activeTab === "home" && (
-          <div className="space-y-8 flex-1 flex flex-col">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8 flex-1 flex flex-col"
+          >
             {/* Hero Profile panel */}
-            <div className={`relative border-b pb-10 transition-colors duration-300
-              ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className={`relative border-b pb-10 transition-colors duration-300
+                ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}
             >
               <div className="absolute right-0 top-0 hidden lg:block text-right font-mono text-[10px] text-slate-500 space-y-1 select-none">
                 <div>GEO-LOC: ASIA_PACIFIC_ONLINE</div>
@@ -281,12 +291,14 @@ export default function App() {
               </div>
 
               <div className="max-w-3xl">
-
-
-
-                <h2 className="font-orbitron text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-indigo-500 to-rose-400 leading-none">
+                <motion.h2 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="font-orbitron text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-indigo-500 to-rose-400 leading-none"
+                >
                   AALIYAN
-                </h2>
+                </motion.h2>
                 <h3 className="font-orbitron text-2xl sm:text-3xl font-bold text-slate-400 tracking-widest mt-1">
                   K.A. SKIPSCAPE
                 </h3>
@@ -319,7 +331,7 @@ export default function App() {
                   </a>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* PROJECTS SHOWCASE MATRICES (CRITICAL SUB-TASK ADDITION) */}
             <div>
@@ -755,7 +767,7 @@ export default function App() {
                 </a>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Tab Page 2: Game Sandbox emulator */}
