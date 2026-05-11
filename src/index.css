@@ -56,21 +56,134 @@
 
 /* Hardware style dashed track grid */
 .tech-grid {
-  background-size: 30px 30px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
 }
 
-/* 3D perspective wrapper */
-.perspective-container {
+/* 🖱️ Custom Cursor Styles */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: transform 0.1s ease-out;
+}
+
+.custom-cursor-outline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.cursor-hover .custom-cursor {
+  transform: scale(2.5);
+}
+
+.cursor-hover .custom-cursor-outline {
+  transform: scale(1.5);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.glass-card {
+  @apply backdrop-blur-xl bg-slate-900/40 border border-white/5 shadow-2xl;
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.perspective-2000 {
+  perspective: 2000px;
+}
+
+.reveal-text {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.light .glass-card {
+  @apply bg-white/40 border-slate-200/50 shadow-lg;
+}
+
+.glass-nav {
+  @apply backdrop-blur-2xl bg-slate-950/40 border-b border-white/5;
+}
+
+.light .glass-nav {
+  @apply bg-white/60 border-slate-200;
+}
+
+.mesh-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #020617;
+}
+
+.light .mesh-container {
+  background: #f8fafc;
+}
+
+.mesh-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  mix-blend-mode: screen;
+}
+
+.light .mesh-orb {
+  opacity: 0.1;
+  mix-blend-mode: multiply;
+}
+
+.orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
+  top: -100px;
+  right: -100px;
+  animation: orb-move 25s infinite alternate ease-in-out;
+}
+
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.3), transparent 70%);
+  bottom: -100px;
+  left: -200px;
+  animation: orb-move 30s infinite alternate-reverse ease-in-out;
+}
+
+.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.2), transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: orb-move 20s infinite alternate ease-in-out;
+}
+
+@keyframes orb-move {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(150px, 150px) scale(1.1); }
+}
+
+.perspective-1000 {
   perspective: 1000px;
-}
-
-/* Glowing buttons */
-.btn-glow {
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-}
-.btn-glow:hover {
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
 }

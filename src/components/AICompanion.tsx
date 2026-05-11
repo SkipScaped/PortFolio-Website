@@ -151,28 +151,28 @@ User Question: ${text}`;
   };
 
   return (
-    <div className="glass-panel flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-6 shadow-2xl h-[560px] md:col-span-1">
+    <div className="flex flex-col rounded-3xl p-6 glass-card h-[560px] md:col-span-1">
       {/* Companion Title HUD */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="relative">
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950 animate-pulse" />
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-indigo-400">
               <Bot className="h-5 w-5" />
             </div>
           </div>
           <div>
-            <h4 className="font-orbitron text-sm font-bold tracking-wider text-slate-200">
-              SKIP_SCAPE COMPANION
+            <h4 className="font-orbitron text-sm font-bold tracking-wider text-slate-200 uppercase">
+              COMP_AI_CLONE
             </h4>
-            <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-400">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-500">
               <Sparkles className="h-3 w-3 text-emerald-400" />
-              <span>Model: gemini-3-flash</span>
+              <span>CORE: GEMINI-3-FLASH</span>
             </div>
           </div>
         </div>
         
-        <div className="hidden sm:flex items-center gap-1 font-mono text-[9px] bg-slate-900 border border-slate-800 rounded px-2 py-0.5 text-indigo-400">
+        <div className="hidden sm:flex items-center gap-1 font-mono text-[9px] bg-white/5 border border-white/5 rounded px-2 py-0.5 text-indigo-400">
           <Terminal className="h-3 w-3" /> ONLINE_CORES
         </div>
       </div>
@@ -185,23 +185,23 @@ User Question: ${text}`;
         {messages.map((msg) => (
           <div 
             key={msg.id}
-            className={`flex gap-3 max-w-[85%] ${msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
+            className={`flex gap-3 max-w-[90%] ${msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
           >
             <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-bold
               ${msg.sender === "user" 
-                ? "bg-slate-900 border-slate-800 text-teal-400" 
-                : "bg-indigo-950/40 border-indigo-500/20 text-indigo-400"}`}
+                ? "bg-white/5 border-white/10 text-teal-400" 
+                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"}`}
             >
               {msg.sender === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
             </div>
 
-            <div className={`rounded-xl px-4 py-2.5 text-xs font-sans leading-relaxed shadow-sm whitespace-pre-wrap
+            <div className={`rounded-2xl px-4 py-3 text-[11px] sm:text-xs font-sans leading-relaxed shadow-sm whitespace-pre-wrap
               ${msg.sender === "user" 
-                ? "bg-slate-900 border border-slate-800 text-slate-200" 
-                : "bg-slate-900/60 border border-slate-800/50 text-slate-300"}`}
+                ? "bg-white/5 border border-white/10 text-slate-200" 
+                : "bg-white/10 border border-white/10 text-slate-300"}`}
             >
               {msg.text}
-              <span className="block font-mono text-[9px] text-slate-500 text-right mt-1.5">
+              <span className="block font-mono text-[9px] text-slate-600 text-right mt-2">
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>

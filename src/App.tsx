@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Terminal, Github, Cpu, Layers, Globe, Sparkles, Code, Database, 
   Gamepad, Award, Volume2, VolumeX, Mail, ArrowUpRight, CheckCircle2,
@@ -6,10 +6,16 @@ import {
   Menu, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ThreeDCard from "./components/ThreeDCard";
 import GameSandbox from "./components/GameSandbox";
 import AICompanion from "./components/AICompanion";
 import ProposalBuilder from "./components/ProposalBuilder";
+import CustomCursor from "./components/CustomCursor";
+import ThreeBackground from "./components/ThreeBackground";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface ProjectItem {
   title: string;
@@ -24,11 +30,36 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [currentDateString, setCurrentDateString] = useState("");
+  const heroRef = useRef<HTMLDivElement>(null);
+  const projectsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const date = new Date();
     setCurrentDateString(date.toLocaleDateString([], { month: "short", day: "numeric" }));
-  }, []);
+
+    // GSAP Scroll Animations
+    if (activeTab === "home") {
+      gsap.fromTo(".hero-name", 
+        { y: 100, opacity: 0, scale: 0.8 },
+        { y: 0, opacity: 1, scale: 1, duration: 1.5, ease: "expo.out", delay: 0.2 }
+      );
+
+      gsap.fromTo(".project-card", 
+        { y: 60, opacity: 0 },
+        { 
+          y: 0, 
+          opacity: 1, 
+          duration: 1, 
+          stagger: 0.2, 
+          ease: "power4.out",
+          scrollTrigger: {
+            trigger: ".project-card",
+            start: "top 85%",
+          }
+        }
+      );
+    }
+  }, [activeTab]);
 
   const audioCtxRef = React.useRef<AudioContext | null>(null);
 
@@ -83,6 +114,12 @@ export default function App() {
 
   const showcaseProjects: ProjectItem[] = [
     {
+      title: "Weather Flow Pro",
+      desc: "High-performance meteorology dashboard with procedural atmospheric visualizations and dynamic data streaming. Precision weather mapping.",
+      link: "https://weather-flow-app-pro.vercel.app/",
+      tags: ["React", "Motion", "Vite", "API Integration"]
+    },
+    {
       title: "Green Loop Shop",
       desc: "Full-scale eco-friendly e-commerce engine with modular green lifestyle product listings, dynamic slide-out cart modules, and real-time checkout configurations.",
       link: "https://green-loop-shop.vercel.app/",
@@ -97,14 +134,21 @@ export default function App() {
   ];
 
   return (
-    <div className={`tech-grid min-h-screen transition-colors duration-300 font-sans flex flex-col pb-12 selection:bg-indigo-500 selection:text-white
-      ${theme === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}
+    <div className={`tech-grid min-h-screen transition-colors duration-300 font-sans flex flex-col pb-12 selection:bg-indigo-500 selection:text-white relative cursor-none
+      ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
     >
+      <CustomCursor />
+      <ThreeBackground />
+      
+      {/* 🔮 MESH BACKGROUND ORBS */}
+      <div className="mesh-container">
+        <div className="mesh-orb orb-1" />
+        <div className="mesh-orb orb-2" />
+        <div className="mesh-orb orb-3" />
+      </div>
+
       {/* 🚀 IMMERSIVE HUD HEADER */}
-      <header className={`sticky top-0 z-40 w-full border-b backdrop-blur-md px-4 py-3 sm:px-8 transition-colors duration-300
-        ${theme === "dark" 
-          ? "border-slate-900 bg-slate-950/80" 
-          : "border-slate-200 bg-white/80"}`}
+      <header className={`sticky top-0 z-40 w-full glass-nav px-4 py-3 sm:px-8 transition-colors duration-300`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div 
@@ -290,21 +334,30 @@ export default function App() {
                 <div className="text-teal-500">TYPESCRIPT MATRIX INITIALIZED</div>
               </div>
 
-              <div className="max-w-3xl">
+              <div className="max-w-3xl" ref={heroRef}>
                 <motion.h2 
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="font-orbitron text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-indigo-500 to-rose-400 leading-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="font-orbitron text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-indigo-400 to-rose-400 leading-none drop-shadow-sm select-none hero-name"
                 >
                   AALIYAN
                 </motion.h2>
-                <h3 className="font-orbitron text-2xl sm:text-3xl font-bold text-slate-400 tracking-widest mt-1">
-                  K.A. SKIPSCAPE
-                </h3>
-                <p className="mt-4 font-sans text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed">
+                <motion.h3 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="font-orbitron text-xl sm:text-2xl font-bold text-slate-400 tracking-[0.3em] mt-4 flex items-center gap-6 uppercase select-none"
+                >
+                  SkipScape <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent max-w-[150px]" />
+                </motion.h3>
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 1 }}
+                  className="mt-6 font-sans text-sm sm:text-lg text-slate-400 max-w-2xl leading-relaxed"
+                >
                   I construct robust full-stack web architectures using modern <strong>TypeScript, Next.js, Django</strong>, and robust databases like <strong>Supabase</strong> & <strong>Firebase Firestore Security</strong>. Behind the screens, I research Artificial Intelligence paradigms and build retro physics templates natively with the <strong>Godot</strong> game engine.
-                </p>
+                </motion.p>
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <a
@@ -347,52 +400,56 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {showcaseProjects.map((proj, idx) => (
+                  {showcaseProjects.map((proj, idx) => (
                   <div
                     key={idx}
-                    className={`rounded-2xl border p-6 transition-all duration-300 flex flex-col justify-between hover:scale-[1.01]
-                      ${theme === "dark" 
-                        ? "bg-slate-950/60 border-slate-800 hover:border-slate-700/60 shadow-lg" 
-                        : "bg-white border-slate-200/90 shadow hover:shadow-md text-slate-800"}`}
+                    className="project-card h-full"
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-3 border-b pb-3 border-slate-800/10 dark:border-slate-900/60">
-                        <span className="font-mono text-[11px] font-bold text-teal-500 uppercase flex items-center gap-1.5">
-                          <Blocks className="h-3.5 w-3.5" /> Project {idx + 1}
-                        </span>
-                        <a
-                          href={proj.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => playBeep(700)}
-                          className="text-slate-400 hover:text-indigo-500 flex items-center gap-1 text-[11px] font-mono transition-colors"
+                    <div
+                      className={`h-full rounded-3xl p-8 transition-all duration-500 flex flex-col justify-between hover:scale-[1.02] glass-card group
+                        ${theme === "dark" 
+                          ? "" 
+                          : "text-slate-800"}`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-3 border-b pb-3 border-white/5">
+                          <span className="font-mono text-[11px] font-bold text-teal-500 uppercase flex items-center gap-1.5">
+                            <Blocks className="h-3.5 w-3.5" /> Project {idx + 1}
+                          </span>
+                          <a
+                            href={proj.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => playBeep(700)}
+                            className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/5 flex items-center gap-1.5 text-[10px] font-mono transition-all"
+                          >
+                            <span>VISIT_LIVE</span> <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+
+                        <h4 className={`font-orbitron text-lg font-bold tracking-wide mb-2
+                          ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
                         >
-                          <span>Live Site</span> <ExternalLink className="h-3 w-3" />
-                        </a>
+                          {proj.title}
+                        </h4>
+                        <p className="font-sans text-xs text-slate-400 leading-relaxed mb-4">
+                          {proj.desc}
+                        </p>
                       </div>
 
-                      <h4 className={`font-orbitron text-base font-bold tracking-wide mb-2
-                        ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
-                      >
-                        {proj.title}
-                      </h4>
-                      <p className="font-sans text-xs text-slate-400 leading-relaxed mb-4">
-                        {proj.desc}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-800/10 dark:border-slate-900/40">
-                      {proj.tags.map((tag, tIdx) => (
-                        <span
-                          key={tIdx}
-                          className={`font-mono text-[9px] px-2 py-0.5 rounded
-                            ${theme === "dark" 
-                              ? "bg-slate-900 text-slate-400 border border-slate-800" 
-                              : "bg-slate-100 text-slate-600 border border-slate-200"}`}
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/5">
+                        {proj.tags.map((tag, tIdx) => (
+                          <span
+                            key={tIdx}
+                            className={`font-mono text-[9px] px-2.5 py-1 rounded-full
+                              ${theme === "dark" 
+                                ? "bg-white/5 text-slate-400 border border-white/5" 
+                                : "bg-slate-100 text-slate-600 border border-slate-200"}`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -420,10 +477,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_skills">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -476,10 +533,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_arcade">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -535,10 +592,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_database">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -582,10 +639,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_services">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -639,10 +696,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_companion">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -692,10 +749,10 @@ export default function App() {
                 visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
               }}>
                 <ThreeDCard id="card_future">
-                  <div className={`h-full rounded-2xl border p-6 flex flex-col justify-between transition-colors duration-300
+                  <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
-                      ? "bg-slate-950 border-slate-800" 
-                      : "bg-white border-slate-200 shadow-sm text-slate-800"}`}
+                      ? "" 
+                      : "text-slate-800"}`}
                   >
                     <div>
                       <div className="flex items-center justify-between border-b pb-3 mb-4 border-slate-800/10 dark:border-slate-900/60">
@@ -730,8 +787,8 @@ export default function App() {
             </motion.div>
 
             {/* Direct Contact segment detailing WhatsApp and Github details */}
-            <div className={`rounded-2xl border p-6 transition-colors duration-300 space-y-3
-              ${theme === "dark" ? "bg-slate-950/40 border-slate-900" : "bg-white border-slate-200 shadow"}`}
+            <div className={`rounded-3xl p-8 transition-colors duration-300 space-y-4 glass-card
+              ${theme === "dark" ? "" : ""}`}
             >
               <h4 className={`font-orbitron text-sm font-bold tracking-wider flex items-center gap-2
                 ${theme === "dark" ? "text-slate-100" : "text-slate-800"}`}
