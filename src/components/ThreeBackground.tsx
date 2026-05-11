@@ -1,9 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export default function ThreeBackground() {
+export default function ThreeBackground({ theme }: { theme: "dark" | "light" }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const themeRef = useRef(theme);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -34,10 +39,10 @@ export default function ThreeBackground() {
 
     const particlesMaterial = new THREE.PointsMaterial({
       size: 0.015,
-      color: '#6366f1',
+      color: theme === "dark" ? '#6366f1' : '#4f46e5',
       transparent: true,
-      opacity: 0.4,
-      blending: THREE.AdditiveBlending,
+      opacity: theme === "dark" ? 0.4 : 0.2,
+      blending: theme === "dark" ? THREE.AdditiveBlending : THREE.NormalBlending,
       sizeAttenuation: true
     });
 
@@ -54,10 +59,10 @@ export default function ThreeBackground() {
     starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     const starsMaterial = new THREE.PointsMaterial({
       size: 0.005,
-      color: '#ffffff',
+      color: theme === "dark" ? '#ffffff' : '#000000',
       transparent: true,
-      opacity: 0.2,
-      blending: THREE.AdditiveBlending
+      opacity: theme === "dark" ? 0.2 : 0.1,
+      blending: theme === "dark" ? THREE.AdditiveBlending : THREE.NormalBlending
     });
     const starsMesh = new THREE.Points(starsGeometry, starsMaterial);
     scene.add(starsMesh);

@@ -10,7 +10,7 @@ interface ServiceOption {
   icon: React.ReactNode;
 }
 
-export default function ProposalBuilder() {
+export default function ProposalBuilder({ theme }: { theme: "dark" | "light" }) {
   const [selectedServices, setSelectedServices] = useState<string[]>(["portfolio"]);
   const [databaseOption, setDatabaseOption] = useState<string>("supabase");
   const [customFeatures, setCustomFeatures] = useState<Record<string, boolean>>({
@@ -136,7 +136,7 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
   };
 
   return (
-    <div className="glass-panel flex flex-col rounded-2xl border border-slate-800 bg-slate-950 p-6 shadow-2xl md:col-span-2">
+    <div className={`glass-panel flex flex-col rounded-2xl border p-6 shadow-2xl md:col-span-2 ${theme === "dark" ? "border-slate-800 bg-slate-950" : "border-slate-200 bg-white"}`}>
       <div className="mb-4">
         <h3 className="font-orbitron text-lg font-bold tracking-wider text-indigo-400">
           PROPOSAL CALCULATOR & CONTRACT BUILDER
@@ -162,18 +162,18 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
                     onClick={() => handleToggleService(service.id)}
                     className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none
                       ${isSelected 
-                        ? "bg-slate-900 border-indigo-500/40" 
-                        : "bg-slate-950/40 border-slate-900 hover:border-slate-800"}`}
+                        ? theme === "dark" ? "bg-slate-900 border-indigo-500/40" : "bg-indigo-50 border-indigo-200" 
+                        : theme === "dark" ? "bg-slate-950/40 border-slate-900 hover:border-slate-800" : "bg-slate-50 border-slate-100 hover:border-slate-200 shadow-sm"}`}
                   >
-                    <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border text-slate-950
-                      ${isSelected ? "bg-indigo-500 border-indigo-500" : "border-slate-800 bg-slate-900"}`}
+                    <div className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border
+                      ${isSelected ? "bg-indigo-500 border-indigo-500" : theme === "dark" ? "border-slate-800 bg-slate-900" : "border-slate-300 bg-white"}`}
                     >
                       {isSelected && <Check className="h-3 w-3 text-white stroke-[3px]" />}
                     </div>
                     
                     <div className="flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="flex items-center gap-1.5 font-sans text-xs font-bold text-slate-200">
+                        <span className={`flex items-center gap-1.5 font-sans text-xs font-bold ${theme === "dark" ? "text-slate-200" : "text-slate-800"}`}>
                           {service.icon}
                           {service.name}
                         </span>
@@ -206,8 +206,8 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
                   onClick={() => setDatabaseOption(dbOpt.id)}
                   className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer select-none
                     ${databaseOption === dbOpt.id 
-                      ? "bg-slate-900 border-teal-500/40 text-teal-300" 
-                      : "bg-slate-950/20 border-slate-900 text-slate-400 hover:border-slate-800"}`}
+                      ? theme === "dark" ? "bg-slate-900 border-teal-500/40 text-teal-300" : "bg-teal-50 border-teal-200 text-teal-600"
+                      : theme === "dark" ? "bg-slate-950/20 border-slate-900 text-slate-400 hover:border-slate-800" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"}`}
                 >
                   <Database className="h-4 w-4 mb-1" />
                   <span className="font-sans text-[11px] font-bold">{dbOpt.label}</span>
@@ -234,10 +234,10 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
                     onClick={() => handleToggleFeature(feat.key)}
                     className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none
                       ${isActive 
-                        ? "bg-slate-900/60 border-slate-700/60" 
-                        : "bg-slate-950/20 border-slate-900"}`}
+                        ? theme === "dark" ? "bg-slate-900/60 border-slate-700/60" : "bg-slate-100 border-indigo-200"
+                        : theme === "dark" ? "bg-slate-950/20 border-slate-900" : "bg-slate-50 border-slate-200 text-slate-600"}`}
                   >
-                    <span className="font-sans text-[11px] text-slate-300">{feat.label}</span>
+                    <span className={`font-sans text-[11px] ${theme === "dark" ? "text-slate-300" : "text-slate-700"}`}>{feat.label}</span>
                     <span className="font-mono text-[10px] text-indigo-400 font-semibold">{feat.desc}</span>
                   </label>
                 );
@@ -247,10 +247,10 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
         </div>
 
         {/* Right Column: Dynamic Charter output */}
-        <div className="flex flex-col rounded-xl bg-slate-950/80 p-5 border border-slate-900 h-full justify-between">
+        <div className={`flex flex-col rounded-xl p-5 border h-full justify-between ${theme === "dark" ? "bg-slate-950/80 border-slate-900" : "bg-slate-50 border-slate-200"}`}>
           <div>
-            <div className="flex items-center justify-between border-b border-slate-900 pb-3 mb-3">
-              <span className="font-sans text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
+            <div className={`flex items-center justify-between border-b pb-3 mb-3 ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}>
+              <span className={`font-sans text-xs font-bold uppercase flex items-center gap-2 ${theme === "dark" ? "text-slate-300" : "text-slate-800"}`}>
                 <FilePlus className="h-4 w-4 text-indigo-400 animate-pulse" /> Live Proposal Output
               </span>
               <div className="flex items-center gap-1 font-mono text-[11px] text-slate-400">
@@ -260,11 +260,13 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
             </div>
 
             {generatedCharter ? (
-              <div className="h-64 overflow-y-auto space-y-2 rounded bg-black/40 p-4 border border-slate-900 font-mono text-[10px] text-slate-300 whitespace-pre-wrap leading-relaxed select-all">
+              <div className={`h-64 overflow-y-auto space-y-2 rounded p-4 border font-mono text-[10px] whitespace-pre-wrap leading-relaxed select-all
+                ${theme === "dark" ? "bg-black/40 border-slate-900 text-slate-300" : "bg-white border-slate-200 text-slate-700 shadow-inner"}`}>
                 {generatedCharter}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-center rounded border border-dashed border-slate-900 bg-slate-950/40 p-4">
+              <div className={`flex flex-col items-center justify-center h-64 text-center rounded border border-dashed p-4
+                ${theme === "dark" ? "border-slate-900 bg-slate-950/40" : "border-slate-300 bg-white"}`}>
                 <CheckCircle className="h-8 w-8 text-slate-600 mb-2" />
                 <p className="font-sans text-xs text-slate-400">
                   Fill in your custom categories on the left, then click build to generate your agreement charter.
@@ -273,7 +275,7 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
             )}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between gap-4">
+          <div className={`mt-4 pt-3 border-t flex items-center justify-between gap-4 ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}>
             <div className="font-sans">
               <span className="block text-[10px] uppercase text-slate-500 font-medium font-mono">
                 COMPUTED PRICE CORE:
@@ -288,7 +290,8 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
                 <button
                   id="btn_proposal_copy"
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 px-3 py-2 text-xs font-sans font-bold transition-all cursor-pointer active:scale-95"
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-sans font-bold transition-all cursor-pointer active:scale-95
+                    ${theme === "dark" ? "bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300" : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm"}`}
                 >
                   <Copy className="h-3.5 w-3.5" />
                   {copied ? "COPIED" : "COPY"}
@@ -298,7 +301,7 @@ ${customFeatures.animations ? "- **Enhanced 3D and GSAP UI**: Immersive mouse-dr
               <button
                 id="btn_proposal_generate"
                 onClick={handleBuildCharter}
-                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-xs font-sans font-bold transition-all cursor-pointer active:scale-95 border border-indigo-500/20"
+                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-xs font-sans font-bold transition-all cursor-pointer active:scale-95 border border-indigo-500/20 shadow-md"
               >
                 COMPILE CHARTER
               </button>

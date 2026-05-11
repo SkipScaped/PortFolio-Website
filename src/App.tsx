@@ -134,11 +134,11 @@ export default function App() {
   ];
 
   return (
-    <div className={`tech-grid min-h-screen transition-colors duration-300 font-sans flex flex-col pb-12 selection:bg-indigo-500 selection:text-white relative cursor-none
+    <div className={`tech-grid min-h-screen transition-colors duration-300 font-sans flex flex-col pb-12 selection:bg-indigo-500 selection:text-white relative cursor-none ${theme}
       ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
     >
       <CustomCursor />
-      <ThreeBackground />
+      <ThreeBackground theme={theme} />
       
       {/* 🔮 MESH BACKGROUND ORBS */}
       <div className="mesh-container">
@@ -191,7 +191,9 @@ export default function App() {
                 className={`rounded-lg px-4 py-1.5 font-sans text-xs font-bold transition-all cursor-pointer border
                   ${activeTab === tab.id 
                     ? "bg-indigo-600/10 text-indigo-500 border-indigo-500/20 shadow-sm" 
-                    : "bg-transparent text-slate-400 border-transparent hover:text-slate-200"}`}
+                    : theme === "dark" 
+                      ? "bg-transparent text-slate-400 border-transparent hover:text-slate-200"
+                      : "bg-transparent text-slate-500 border-transparent hover:text-slate-900"}`}
               >
                 {tab.label}
               </button>
@@ -837,14 +839,14 @@ export default function App() {
         {/* Tab Page 3: Tailored Proposal Pricing calculator */}
         {activeTab === "proposal" && (
           <div className="space-y-6 flex-1 flex flex-col justify-center py-4">
-            <ProposalBuilder />
+            <ProposalBuilder theme={theme} />
           </div>
         )}
 
         {/* Tab Page 4: Gemini-powered AI clone companion */}
         {activeTab === "companion" && (
           <div className="space-y-6 flex-1 flex flex-col justify-center py-4">
-            <AICompanion />
+            <AICompanion theme={theme} />
           </div>
         )}
       </main>

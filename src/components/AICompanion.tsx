@@ -9,7 +9,7 @@ interface Message {
   timestamp: Date;
 }
 
-export default function AICompanion() {
+export default function AICompanion({ theme }: { theme: "dark" | "light" }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -87,8 +87,8 @@ export default function AICompanion() {
           responseText = "### SKIPSCAPE DEV PROPOSAL\n\n**Client:** Custom Agency Website\n**Developer:** Aaliyan (SkipScape)\n**Est. Timeline:** 3 Weeks\n**Est. Cost:** $2,500 USD\n\n#### Deliverables:\n1. Tailored glassmorphism layout structured with React & Tailwind CSS\n2. Advanced GSAP animation curves for viewport scrolling\n3. High-availability CRM contact forms powered by Supabase & serverless APIs\n4. Optimized Lighthouse scores (95+ ranking)\n\n*Proposal simulated successfully. (Unlock live custom Gemini answers by adding a valid API key in AI Studio Secrets!).*";
         } else {
           responseText = `As Aaliyan's AI Clone (SkipScape Companion), I can confirm his extensive Full-Stack toolkit: HTML/CSS/JS, React.js, Next.js, Redux, Tailwind, Django, Python, C#, and FastAPI. His ultimate vision is exploring AI/ML integration. 
-
-*(Get customized real-time answers by providing a valid GEMINI_API_KEY in the environment secrets file!)*`;
+ 
+ *(Get customized real-time answers by providing a valid GEMINI_API_KEY in the environment secrets file!)*`;
         }
 
         const botMsg: Message = {
@@ -151,18 +151,18 @@ User Question: ${text}`;
   };
 
   return (
-    <div className="flex flex-col rounded-3xl p-6 glass-card h-[560px] md:col-span-1">
+    <div className={`flex flex-col rounded-3xl p-6 glass-card h-[560px] md:col-span-1 ${theme}`}>
       {/* Companion Title HUD */}
-      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+      <div className={`flex items-center justify-between border-b pb-4 mb-4 ${theme === "dark" ? "border-white/5" : "border-slate-200"}`}>
         <div className="flex items-center gap-3">
           <div className="relative">
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950 animate-pulse" />
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-indigo-400">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl border text-indigo-400 ${theme === "dark" ? "bg-white/5 border-white/10" : "bg-slate-100 border-slate-200"}`}>
               <Bot className="h-5 w-5" />
             </div>
           </div>
           <div>
-            <h4 className="font-orbitron text-sm font-bold tracking-wider text-slate-200 uppercase">
+            <h4 className={`font-orbitron text-sm font-bold tracking-wider uppercase ${theme === "dark" ? "text-slate-200" : "text-slate-800"}`}>
               COMP_AI_CLONE
             </h4>
             <div className="flex items-center gap-1.5 font-mono text-[10px] text-slate-500">
@@ -172,7 +172,7 @@ User Question: ${text}`;
           </div>
         </div>
         
-        <div className="hidden sm:flex items-center gap-1 font-mono text-[9px] bg-white/5 border border-white/5 rounded px-2 py-0.5 text-indigo-400">
+        <div className={`hidden sm:flex items-center gap-1 font-mono text-[9px] border rounded px-2 py-0.5 text-indigo-400 ${theme === "dark" ? "bg-white/5 border-white/5" : "bg-slate-100 border-slate-200"}`}>
           <Terminal className="h-3 w-3" /> ONLINE_CORES
         </div>
       </div>
@@ -189,19 +189,19 @@ User Question: ${text}`;
           >
             <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-bold
               ${msg.sender === "user" 
-                ? "bg-white/5 border-white/10 text-teal-400" 
-                : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"}`}
+                ? theme === "dark" ? "bg-white/5 border-white/10 text-teal-400" : "bg-teal-50 border-teal-100 text-teal-600"
+                : theme === "dark" ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400" : "bg-indigo-50 border-indigo-100 text-indigo-600"}`}
             >
               {msg.sender === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
             </div>
 
             <div className={`rounded-2xl px-4 py-3 text-[11px] sm:text-xs font-sans leading-relaxed shadow-sm whitespace-pre-wrap
               ${msg.sender === "user" 
-                ? "bg-white/5 border border-white/10 text-slate-200" 
-                : "bg-white/10 border border-white/10 text-slate-300"}`}
+                ? theme === "dark" ? "bg-white/5 border border-white/10 text-slate-200" : "bg-white border-slate-100 text-slate-800"
+                : theme === "dark" ? "bg-white/10 border border-white/10 text-slate-300" : "bg-slate-50 border-slate-100 text-slate-700"}`}
             >
               {msg.text}
-              <span className="block font-mono text-[9px] text-slate-600 text-right mt-2">
+              <span className={`block font-mono text-[9px] text-right mt-2 ${theme === "dark" ? "text-slate-600" : "text-slate-400"}`}>
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
@@ -210,10 +210,10 @@ User Question: ${text}`;
 
         {isLoading && (
           <div className="flex gap-3 max-w-[80%] mr-auto items-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-indigo-950/40 border-indigo-500/20 text-indigo-400 animate-spin">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg border text-indigo-400 animate-spin ${theme === "dark" ? "bg-indigo-950/40 border-indigo-500/20" : "bg-indigo-50 border-indigo-100"}`}>
               <Sparkles className="h-4 w-4" />
             </div>
-            <div className="rounded-lg bg-slate-900/50 px-4 py-2 text-xs font-mono text-slate-400">
+            <div className={`rounded-lg px-4 py-2 text-xs font-mono ${theme === "dark" ? "bg-slate-900/50 text-slate-400" : "bg-slate-100 text-slate-500"}`}>
               Compiling synapse response...
             </div>
           </div>
@@ -226,7 +226,10 @@ User Question: ${text}`;
           <button
             key={idx}
             onClick={() => handleSendMessage(p.prompt)}
-            className="flex items-center gap-1.5 text-[10px] bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-full transition-all cursor-pointer active:scale-95"
+            className={`flex items-center gap-1.5 text-[10px] border px-2.5 py-1 rounded-full transition-all cursor-pointer active:scale-95
+              ${theme === "dark" 
+                ? "bg-slate-900 hover:bg-slate-800 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200" 
+                : "bg-white hover:bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm"}`}
           >
             {idx === 0 && <BookOpen className="h-3 w-3 text-teal-400" />}
             {idx === 1 && <Terminal className="h-3 w-3 text-amber-400" />}
@@ -246,12 +249,15 @@ User Question: ${text}`;
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask about Supabase integration, Godot learning..."
-          className="flex-1 bg-slate-950/80 hover:bg-slate-950 focus:bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-slate-200 outline-none transition-all placeholder:text-slate-500"
+          className={`flex-1 border rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder:text-slate-500
+            ${theme === "dark" 
+              ? "bg-slate-950/80 hover:bg-slate-950 focus:bg-slate-950 border-slate-800 hover:border-slate-700 focus:border-indigo-500 text-slate-200" 
+              : "bg-white border-slate-200 focus:border-indigo-400 text-slate-800 shadow-inner"}`}
         />
         <button
           type="submit"
           disabled={!inputValue.trim() || isLoading}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-slate-900 disabled:text-slate-600 border border-indigo-500/20 active:scale-95 transition-all cursor-pointer"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white disabled:bg-slate-200 disabled:text-slate-400 border border-indigo-500/20 active:scale-95 transition-all cursor-pointer"
         >
           <Send className="h-4 w-4" />
         </button>
