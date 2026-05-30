@@ -10,6 +10,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ThreeDCard from "./components/ThreeDCard";
 import GameSandbox from "./components/GameSandbox";
+import BabylonSandbox from "./components/BabylonSandbox";
 import AICompanion from "./components/AICompanion";
 import ProposalBuilder from "./components/ProposalBuilder";
 import CustomCursor from "./components/CustomCursor";
@@ -29,36 +30,92 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [is3DActive, setIs3DActive] = useState(false);
   const [currentDateString, setCurrentDateString] = useState("");
   const heroRef = useRef<HTMLDivElement>(null);
   const projectsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
+  useEffect(() => {
     const date = new Date();
     setCurrentDateString(date.toLocaleDateString([], { month: "short", day: "numeric" }));
 
-    // GSAP Scroll Animations
-    if (activeTab === "home") {
-      gsap.fromTo(".hero-name", 
-        { y: 100, opacity: 0, scale: 0.8 },
-        { y: 0, opacity: 1, scale: 1, duration: 1.5, ease: "expo.out", delay: 0.2 }
-      );
+    // Create a GSAP Context for exact scoped rendering and reliable cleanup
+    const ctx = gsap.context(() => {
+      // Small timeout ensures the DOM has fully rendered under the new tab selection
+      const timer = setTimeout(() => {
+        if (activeTab === "home") {
+          // Hero title sequence
+          gsap.fromTo(".hero-name", 
+            { y: 90, opacity: 0, scale: 0.85, rotateX: 12 },
+            { y: 0, opacity: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out" }
+          );
 
-      gsap.fromTo(".project-card", 
-        { y: 60, opacity: 0 },
-        { 
-          y: 0, 
-          opacity: 1, 
-          duration: 1, 
-          stagger: 0.2, 
-          ease: "power4.out",
-          scrollTrigger: {
-            trigger: ".project-card",
-            start: "top 85%",
-          }
+          // Subtitle and descriptions staggered reveal
+          gsap.fromTo([".hero-subtitle", ".hero-desc", ".hero-btn"],
+            { y: 40, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1.1, stagger: 0.15, ease: "power4.out", delay: 0.1 }
+          );
+
+          // Absolute layout metadata indicators
+          gsap.fromTo(".hero-indicator",
+            { opacity: 0, x: 25 },
+            { opacity: 1, x: 0, duration: 1.2, ease: "power3.out", delay: 0.4 }
+          );
+
+          // Project cards reveal on scroll
+          gsap.fromTo(".project-card", 
+            { y: 80, opacity: 0, scale: 0.95 },
+            { 
+              y: 0, 
+              opacity: 1, 
+              scale: 1,
+              duration: 1.1, 
+              stagger: 0.15, 
+              ease: "power4.out",
+              scrollTrigger: {
+                trigger: ".project-card",
+                start: "top 90%",
+                toggleActions: "play none none none"
+              }
+            }
+          );
+
+          // Bento cards stagger scale-up reveal on scroll
+          gsap.fromTo(".bento-card",
+            { y: 80, opacity: 0, scale: 0.94 },
+            {
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              duration: 1.1,
+              stagger: 0.12,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: ".bento-card",
+                start: "top 92%",
+                toggleActions: "play none none none"
+              }
+            }
+          );
+        } else {
+          // Secondary Tab Views entry transitions of the viewframes
+          gsap.fromTo(".active-panel-view",
+            { opacity: 0, y: 35, scale: 0.97 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power3.out" }
+          );
         }
-      );
-    }
+      }, 40);
+
+      return () => clearTimeout(timer);
+    });
+
+    return () => {
+      ctx.revert(); // Terminate and revert all matching scroll triggers instantly
+    };
   }, [activeTab]);
 
   const audioCtxRef = React.useRef<AudioContext | null>(null);
@@ -138,7 +195,7 @@ export default function App() {
       ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
     >
       <CustomCursor />
-      <ThreeBackground theme={theme} />
+      <ThreeBackground theme={theme} activeTab={activeTab} is3DActive={is3DActive} setIs3DActive={setIs3DActive} />
       
       {/* 🔮 MESH BACKGROUND ORBS */}
       <div className="mesh-container">
@@ -202,6 +259,26 @@ export default function App() {
 
           {/* HUD Utility controls */}
           <div className="flex items-center gap-2 font-mono text-xs">
+            {/* 🕹️ 3D Physics Sandbox Toggle */}
+            <button
+              id="btn_3d_sandbox_toggle"
+              onClick={() => {
+                const newState = !is3DActive;
+                setIs3DActive(newState);
+                playBeep(newState ? 880 : 440, 0.15);
+              }}
+              className={`flex items-center gap-1.5 h-9 px-3 rounded-lg border transition-all duration-300 cursor-pointer font-bold font-orbitron text-[9px] tracking-widest
+                ${is3DActive 
+                  ? "bg-gradient-to-r from-teal-500/20 via-indigo-500/20 to-pink-500/20 text-teal-400 border-teal-500/40 shadow-lg shadow-teal-500/15 animate-pulse" 
+                  : theme === "dark" 
+                    ? "border-slate-800 bg-slate-950/40 text-slate-400 hover:text-slate-200" 
+                    : "border-slate-200 bg-white text-slate-600 hover:text-slate-900 shadow-sm"}`}
+              title="Toggle Fullscreen 3D Space Laboratory"
+            >
+              <Blocks className="h-3.5 w-3.5 text-teal-400 animate-spin-slow" />
+              <span className="hidden md:inline">{is3DActive ? "LAB: ACTIVE" : "3D LAB"}</span>
+            </button>
+
             {/* Dark & Light mode toggle */}
             <button
               id="btn_theme_toggle"
@@ -323,43 +400,32 @@ export default function App() {
             className="space-y-8 flex-1 flex flex-col"
           >
             {/* Hero Profile panel */}
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
+            <div 
               className={`relative border-b pb-10 transition-colors duration-300
                 ${theme === "dark" ? "border-slate-900" : "border-slate-200"}`}
             >
-              <div className="absolute right-0 top-0 hidden lg:block text-right font-mono text-[10px] text-slate-500 space-y-1 select-none">
+              <div className="hero-indicator absolute right-0 top-0 hidden lg:block text-right font-mono text-[10px] text-slate-500 space-y-1 select-none">
                 <div>GEO-LOC: ASIA_PACIFIC_ONLINE</div>
                 <div>SYSTEM_EPOCH: 1778239084</div>
                 <div className="text-teal-500">TYPESCRIPT MATRIX INITIALIZED</div>
               </div>
 
               <div className="max-w-3xl" ref={heroRef}>
-                <motion.h2 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                <h2 
                   className="font-orbitron text-6xl sm:text-7xl lg:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-indigo-400 to-rose-400 leading-none drop-shadow-sm select-none hero-name"
                 >
                   AALIYAN
-                </motion.h2>
-                <motion.h3 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="font-orbitron text-xl sm:text-2xl font-bold text-slate-400 tracking-[0.3em] mt-4 flex items-center gap-6 uppercase select-none"
+                </h2>
+                <h3 
+                  className="font-orbitron text-xl sm:text-2xl font-bold text-slate-400 tracking-[0.3em] mt-4 flex items-center gap-6 uppercase select-none hero-subtitle"
                 >
                   SkipScape <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent max-w-[150px]" />
-                </motion.h3>
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 1 }}
-                  className="mt-6 font-sans text-sm sm:text-lg text-slate-400 max-w-2xl leading-relaxed"
+                </h3>
+                <p 
+                  className="mt-6 font-sans text-sm sm:text-lg text-slate-400 max-w-2xl leading-relaxed hero-desc"
                 >
                   I construct robust full-stack web architectures using modern <strong>TypeScript, Next.js, Django</strong>, and robust databases like <strong>Supabase</strong> & <strong>Firebase Firestore Security</strong>. Behind the screens, I research Artificial Intelligence paradigms and build retro physics templates natively with the <strong>Godot</strong> game engine.
-                </motion.p>
+                </p>
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   <a
@@ -367,7 +433,7 @@ export default function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => playBeep(620)}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 font-orbitron text-xs font-bold tracking-wider text-white shadow-md active:scale-95 transition-all cursor-pointer"
+                    className="hero-btn flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 font-orbitron text-xs font-bold tracking-wider text-white shadow-md active:scale-95 transition-all cursor-pointer"
                   >
                     <PhoneCall className="h-4 w-4" /> Whatsapp: +92 370 537 5016
                   </a>
@@ -377,7 +443,7 @@ export default function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => playBeep(640)}
-                    className={`flex items-center gap-2 rounded-xl px-5 py-2.5 font-orbitron text-xs font-bold tracking-wider border transition-all active:scale-95 cursor-pointer
+                    className={`hero-btn flex items-center gap-2 rounded-xl px-5 py-2.5 font-orbitron text-xs font-bold tracking-wider border transition-all active:scale-95 cursor-pointer
                       ${theme === "dark" 
                         ? "bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800" 
                         : "bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-sm"}`}
@@ -386,7 +452,7 @@ export default function App() {
                   </a>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* PROJECTS SHOWCASE MATRICES (CRITICAL SUB-TASK ADDITION) */}
             <div>
@@ -402,13 +468,13 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {showcaseProjects.map((proj, idx) => (
-                  <div
+                {showcaseProjects.map((proj, idx) => (
+                  <ThreeDCard
                     key={idx}
                     className="project-card h-full"
                   >
                     <div
-                      className={`h-full rounded-3xl p-8 transition-all duration-500 flex flex-col justify-between hover:scale-[1.02] glass-card group
+                      className={`h-full rounded-2xl p-8 transition-all duration-500 flex flex-col justify-between glass-card group
                         ${theme === "dark" 
                           ? "" 
                           : "text-slate-800"}`}
@@ -453,31 +519,15 @@ export default function App() {
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </ThreeDCard>
                 ))}
               </div>
             </div>
 
             {/* Immersive 3D Bento Grid and Cards */}
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.1
-                  }
-                }
-              }}
-              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-            >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {/* Card 1: Interactive Technology HUD with TypeScript included! */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_skills">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -527,13 +577,10 @@ export default function App() {
                     </div>
                   </div>
                 </ThreeDCard>
-              </motion.div>
+              </div>
 
               {/* Card 2: Interactive Godot Sandbox Access */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_arcade">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -586,13 +633,10 @@ export default function App() {
                     </button>
                   </div>
                 </ThreeDCard>
-              </motion.div>
+              </div>
 
               {/* Card 3: Database & ABAC Security info */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_database">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -633,13 +677,10 @@ export default function App() {
                     </div>
                   </div>
                 </ThreeDCard>
-              </motion.div>
+              </div>
 
               {/* Card 4: Services Rendered */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_services">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -690,13 +731,10 @@ export default function App() {
                     </button>
                   </div>
                 </ThreeDCard>
-              </motion.div>
+              </div>
 
               {/* Card 5: AI Companion Link */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_companion">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -743,13 +781,10 @@ export default function App() {
                     </button>
                   </div>
                 </ThreeDCard>
-              </motion.div>
+              </div>
 
               {/* Card 6: AI / ML Goals */}
-              <motion.div variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}>
+              <div className="bento-card">
                 <ThreeDCard id="card_future">
                   <div className={`h-full rounded-2xl p-6 flex flex-col justify-between transition-colors duration-300 glass-card
                     ${theme === "dark" 
@@ -785,8 +820,8 @@ export default function App() {
                     </div>
                   </div>
                 </ThreeDCard>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
             {/* Direct Contact segment detailing WhatsApp and Github details */}
             <div className={`rounded-3xl p-8 transition-colors duration-300 space-y-4 glass-card
@@ -824,6 +859,19 @@ export default function App() {
                 >
                   <Github className="h-4 w-4" /> Github: @SkipScaped
                 </a>
+
+                <a
+                  href="https://www.fiverr.com/s/5rY9RAz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => playBeep(580)}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold font-mono border transition-all
+                    ${theme === "dark"
+                      ? "bg-emerald-950/20 hover:bg-emerald-900/30 text-emerald-400 border-slate-800 hover:border-emerald-500/30"
+                      : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-slate-200 hover:border-emerald-300"}`}
+                >
+                  <Globe className="h-4 w-4 text-[#1dbf73]" /> Fiverr: @Aaliyan
+                </a>
               </div>
             </div>
           </motion.div>
@@ -831,21 +879,24 @@ export default function App() {
 
         {/* Tab Page 2: Game Sandbox emulator */}
         {activeTab === "sandbox" && (
-          <div className="space-y-6 flex-1 flex flex-col justify-center py-4">
-            <GameSandbox />
+          <div className="active-panel-view space-y-8 flex-1 flex flex-col justify-center py-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start w-full">
+              <GameSandbox />
+              <BabylonSandbox theme={theme} />
+            </div>
           </div>
         )}
 
         {/* Tab Page 3: Tailored Proposal Pricing calculator */}
         {activeTab === "proposal" && (
-          <div className="space-y-6 flex-1 flex flex-col justify-center py-4">
+          <div className="active-panel-view space-y-6 flex-1 flex flex-col justify-center py-4">
             <ProposalBuilder theme={theme} />
           </div>
         )}
 
         {/* Tab Page 4: Gemini-powered AI clone companion */}
         {activeTab === "companion" && (
-          <div className="space-y-6 flex-1 flex flex-col justify-center py-4">
+          <div className="active-panel-view space-y-6 flex-1 flex flex-col justify-center py-4">
             <AICompanion theme={theme} />
           </div>
         )}
