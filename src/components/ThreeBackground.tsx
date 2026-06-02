@@ -227,6 +227,28 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
   const stardustRef = useRef<THREE.Points>(null);
   const gridHelperRef = useRef<THREE.GridHelper>(null);
 
+  // Real-time interactive liquid glass bubbles and light highlights configurations
+  const cursorLightRef = useRef<THREE.PointLight>(null);
+  const bubbleRefs = useRef<THREE.Mesh[]>([]);
+
+  const bubbles = useMemo(() => {
+    return Array.from({ length: 18 }).map((_, idx) => {
+      // Procedurally spread bubbles across various depth levels to create absolute dimension layers
+      const angle = (idx / 18) * Math.PI * 2;
+      const radius = 2.4 + Math.random() * 1.8;
+      const x = Math.sin(angle) * radius;
+      const y = Math.cos(angle) * radius;
+      const z = (Math.random() - 0.5) * 2 - 1.5;
+      return {
+        id: idx,
+        basePos: new THREE.Vector3(x, y, z),
+        speed: 0.08 + Math.random() * 0.22,
+        offset: Math.random() * Math.PI * 2,
+        scale: 0.06 + Math.random() * 0.15
+      };
+    });
+  }, []);
+
   // Submodules refs purely for rotation
   const coreIcosahedronRef = useRef<THREE.Mesh>(null);
   const satelliteMeshRef = useRef<THREE.Mesh>(null);
@@ -557,6 +579,23 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
       superRingMeshRef.current.rotation.x = elapsedTime * 0.45;
     }
 
+    // 2.5. Interact and guide liquid glass bubbles and cursor-following spotlight
+    if (cursorLightRef.current) {
+      // Lerp spotlight coordinates to follow user pointing input smoothly
+      cursorLightRef.current.position.x += (pointer.x * 6 - cursorLightRef.current.position.x) * 0.1;
+      cursorLightRef.current.position.y += (pointer.y * 5 - cursorLightRef.current.position.y) * 0.1;
+    }
+
+    bubbles.forEach((bubble, idx) => {
+      const bMesh = bubbleRefs.current[idx];
+      if (!bMesh) return;
+      const t = elapsedTime * bubble.speed + bubble.offset;
+      bMesh.position.x = bubble.basePos.x + Math.sin(t) * 0.45;
+      bMesh.position.y = bubble.basePos.y + Math.cos(t * 1.1) * 0.45;
+      bMesh.position.z = bubble.basePos.z + Math.sin(t * 0.8) * 0.25;
+      bMesh.rotation.y = elapsedTime * 0.15;
+    });
+
     // 3. Update high performance sparks (Explosive interactive buffer maps)
     if (sparkPointsRef.current) {
       const geo = sparkPointsRef.current.geometry;
@@ -629,6 +668,9 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
       <pointLight ref={keyLightRef} position={[4, 6, 2]} intensity={isDark ? 5.5 : 3.5} color={isDark ? '#22d3ee' : '#4f46e5'} distance={25} />
       <pointLight ref={fillLightRef} position={[-6, -4, -3]} intensity={isDark ? 2.5 : 1.5} color={isDark ? '#ec4899' : '#0ea5e9'} distance={20} />
 
+      {/* 💡 INTERACTIVE CURSOR HIGHLIGHT: Drives high-gloss liquid glass specular reflections */}
+      <pointLight ref={cursorLightRef} intensity={isDark ? 3.5 : 7.0} color={isDark ? '#22d3ee' : '#4f46e5'} distance={12} />
+
       {/* ☄️ Background Stardust Fields */}
       <points ref={stardustRef}>
         <bufferGeometry>
@@ -662,6 +704,31 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         />
       </points>
 
+      {/* 💧 BACKGROUND INTERACTIVE LIQUID GLASS BUBBLES */}
+      {bubbles.map((bubble, idx) => (
+        <mesh
+          key={bubble.id}
+          ref={(el) => { if (el) bubbleRefs.current[idx] = el; }}
+          position={bubble.basePos}
+          scale={bubble.scale}
+        >
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshPhysicalMaterial
+            color={isDark ? '#38bdf8' : '#4f46e5'}
+            roughness={isDark ? 0.35 : 0.02}
+            metalness={isDark ? 0.15 : 0.05}
+            transmission={isDark ? 0.35 : 0.96} // High glass transmission in light mode
+            thickness={2.2}
+            ior={1.62}
+            clearcoat={1.0}
+            clearcoatRoughness={0.01}
+            transparent
+            opacity={isDark ? 0.45 : 0.95}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
       {/* 🛡️ 1. CORE MATRIX UNIT */}
       <DraggableNode 
         name="Mainframe Core" 
@@ -671,6 +738,22 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         onInteracted={(pos) => triggerImpactSparks(pos, 35, isDark ? '#22d3ee' : '#4f46e5')}
       >
         <group ref={mainCoreGroupRef}>
+          {/* Inner crystal glass sphere pulsing */}
+          <mesh>
+            <sphereGeometry args={[0.26, 32, 32]} />
+            <meshPhysicalMaterial
+              color={isDark ? '#22d3ee' : '#4f46e5'}
+              roughness={isDark ? 0.32 : 0.02}
+              metalness={isDark ? 0.12 : 0.02}
+              transmission={isDark ? 0.3 : 0.98}
+              thickness={1.6}
+              ior={1.55}
+              clearcoat={1.0}
+              clearcoatRoughness={0.02}
+              transparent
+              opacity={isDark ? 0.6 : 0.98}
+            />
+          </mesh>
           <mesh ref={coreIcosahedronRef}>
             <icosahedronGeometry args={[0.38, 1]} />
             <meshBasicMaterial color={isDark ? '#22d3ee' : '#4f46e5'} wireframe transparent opacity={0.4} />
@@ -698,10 +781,27 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         themeColor={isDark ? '#ec4899' : '#a855f7'}
         onInteracted={(pos) => triggerImpactSparks(pos, 25, isDark ? '#ec4899' : '#a855f7')}
       >
-        <mesh ref={satelliteMeshRef}>
-          <torusKnotGeometry args={[0.26, 0.07, 60, 8]} />
-          <meshBasicMaterial color={isDark ? '#ec4899' : '#a855f7'} wireframe transparent opacity={0.4} />
-        </mesh>
+        <group>
+          {/* Refractive high-end glass loop */}
+          <mesh ref={satelliteMeshRef}>
+            <torusKnotGeometry args={[0.26, 0.07, 60, 12]} />
+            <meshPhysicalMaterial 
+              color={isDark ? '#ec4899' : '#a855f7'} 
+              roughness={isDark ? 0.3 : 0.02}
+              metalness={isDark ? 0.1 : 0.03}
+              transmission={isDark ? 0.25 : 0.94}
+              thickness={1.3}
+              ior={1.62}
+              clearcoat={1.0}
+              transparent 
+              opacity={isDark ? 0.55 : 0.98} 
+            />
+          </mesh>
+          <mesh>
+            <torusKnotGeometry args={[0.262, 0.071, 48, 8]} />
+            <meshBasicMaterial color={isDark ? '#ec4899' : '#a855f7'} wireframe transparent opacity={0.3} />
+          </mesh>
+        </group>
       </DraggableNode>
 
       {/* 🔮 3. OCTAHEDRON NODE */}
@@ -712,10 +812,25 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         themeColor={isDark ? '#a855f7' : '#db2777'}
         onInteracted={(pos) => triggerImpactSparks(pos, 25, isDark ? '#a855f7' : '#db2777')}
       >
-        <mesh ref={octahedronMeshRef}>
-          <octahedronGeometry args={[0.34, 0]} />
-          <meshBasicMaterial color={isDark ? '#a855f7' : '#db2777'} wireframe transparent opacity={0.35} />
-        </mesh>
+        <group>
+          <mesh ref={octahedronMeshRef}>
+            <octahedronGeometry args={[0.34, 0]} />
+            <meshPhysicalMaterial 
+              color={isDark ? '#a855f7' : '#db2777'} 
+              roughness={isDark ? 0.28 : 0.02}
+              transmission={isDark ? 0.35 : 0.96}
+              thickness={1.4}
+              ior={1.52}
+              clearcoat={1.0}
+              transparent 
+              opacity={isDark ? 0.55 : 0.95} 
+            />
+          </mesh>
+          <mesh>
+            <octahedronGeometry args={[0.345, 0]} />
+            <meshBasicMaterial color={isDark ? '#a855f7' : '#db2777'} wireframe transparent opacity={0.35} />
+          </mesh>
+        </group>
       </DraggableNode>
 
       {/* 💎 4. DODECAHEDRON CODEBASE */}
@@ -726,10 +841,24 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         themeColor={isDark ? '#3b82f6' : '#10b981'}
         onInteracted={(pos) => triggerImpactSparks(pos, 25, isDark ? '#3b82f6' : '#10b981')}
       >
-        <mesh ref={dodecahedronMeshRef}>
-          <dodecahedronGeometry args={[0.3, 0]} />
-          <meshBasicMaterial color={isDark ? '#3b82f6' : '#10b981'} wireframe transparent opacity={0.4} />
-        </mesh>
+        <group>
+          <mesh ref={dodecahedronMeshRef}>
+            <dodecahedronGeometry args={[0.3, 0]} />
+            <meshPhysicalMaterial 
+              color={isDark ? '#3b82f6' : '#10b981'} 
+              roughness={isDark ? 0.3 : 0.03}
+              transmission={isDark ? 0.25 : 0.95}
+              thickness={1.5}
+              clearcoat={0.9}
+              transparent 
+              opacity={isDark ? 0.6 : 0.98} 
+            />
+          </mesh>
+          <mesh>
+            <dodecahedronGeometry args={[0.305, 0]} />
+            <meshBasicMaterial color={isDark ? '#3b82f6' : '#10b981'} wireframe transparent opacity={0.35} />
+          </mesh>
+        </group>
       </DraggableNode>
 
       {/* 🧪 5. NEW TETRAHEDRON GLASS NODE */}
@@ -740,10 +869,25 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         themeColor={isDark ? '#10b981' : '#f59e0b'}
         onInteracted={(pos) => triggerImpactSparks(pos, 25, isDark ? '#10b981' : '#f59e0b')}
       >
-        <mesh ref={tetrahedronMeshRef}>
-          <tetrahedronGeometry args={[0.32, 0]} />
-          <meshBasicMaterial color={isDark ? '#10b981' : '#f59e0b'} wireframe transparent opacity={0.4} />
-        </mesh>
+        <group>
+          <mesh ref={tetrahedronMeshRef}>
+            <tetrahedronGeometry args={[0.32, 0]} />
+            <meshPhysicalMaterial 
+              color={isDark ? '#10b981' : '#f59e0b'} 
+              roughness={isDark ? 0.35 : 0.02}
+              transmission={isDark ? 0.3 : 0.97}
+              thickness={1.8}
+              ior={1.65}
+              clearcoat={1.0}
+              transparent 
+              opacity={isDark ? 0.6 : 0.98} 
+            />
+          </mesh>
+          <mesh>
+            <tetrahedronGeometry args={[0.325, 0]} />
+            <meshBasicMaterial color={isDark ? '#10b981' : '#f59e0b'} wireframe transparent opacity={0.35} />
+          </mesh>
+        </group>
       </DraggableNode>
 
       {/* 🌐 6. NEW NEON SUPER RING REACTOR */}
@@ -757,7 +901,19 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         <group>
           <mesh ref={superRingMeshRef}>
             <torusGeometry args={[0.35, 0.05, 12, 64]} />
-            <meshBasicMaterial color={isDark ? '#f43f5e' : '#6366f1'} wireframe transparent opacity={0.4} />
+            <meshPhysicalMaterial 
+              color={isDark ? '#f43f5e' : '#6366f1'} 
+              roughness={isDark ? 0.25 : 0.02}
+              transmission={isDark ? 0.35 : 0.92}
+              thickness={1.2}
+              clearcoat={0.9}
+              transparent 
+              opacity={isDark ? 0.55 : 0.95} 
+            />
+          </mesh>
+          <mesh>
+            <torusGeometry args={[0.35, 0.055, 8, 36]} />
+            <meshBasicMaterial color={isDark ? '#f43f5e' : '#6366f1'} wireframe transparent opacity={0.3} />
           </mesh>
           <mesh ref={ring3Ref}>
             <torusGeometry args={[0.48, 0.006, 8, 36]} />
@@ -790,15 +946,29 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
 
             return (
               <group key={idx}>
-                {/* Strand A node */}
+                {/* Strand A node with exquisite liquid glass beads */}
                 <mesh position={[x1, yOffset, z1]}>
-                  <sphereGeometry args={[0.04, 8, 8]} />
-                  <meshBasicMaterial color={isDark ? '#14b8a6' : '#a855f7'} transparent opacity={0.8} />
+                  <sphereGeometry args={[0.04, 16, 16]} />
+                  <meshPhysicalMaterial
+                    color={isDark ? '#14b8a6' : '#a855f7'}
+                    roughness={isDark ? 0.2 : 0.01}
+                    transmission={isDark ? 0.2 : 0.95}
+                    thickness={0.5}
+                    transparent
+                    opacity={0.9}
+                  />
                 </mesh>
-                {/* Strand B node */}
+                {/* Strand B node with exquisite liquid glass beads */}
                 <mesh position={[x2, yOffset, z2]}>
-                  <sphereGeometry args={[0.04, 8, 8]} />
-                  <meshBasicMaterial color={isDark ? '#ec4899' : '#0ea5e9'} transparent opacity={0.8} />
+                  <sphereGeometry args={[0.04, 16, 16]} />
+                  <meshPhysicalMaterial
+                    color={isDark ? '#ec4899' : '#0ea5e9'}
+                    roughness={isDark ? 0.2 : 0.01}
+                    transmission={isDark ? 0.2 : 0.95}
+                    thickness={0.5}
+                    transparent
+                    opacity={0.9}
+                  />
                 </mesh>
                 {/* Link line */}
                 {idx % 2 === 0 && (
