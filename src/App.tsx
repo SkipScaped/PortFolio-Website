@@ -15,6 +15,8 @@ import AICompanion from "./components/AICompanion";
 import ProposalBuilder from "./components/ProposalBuilder";
 import CustomCursor from "./components/CustomCursor";
 import ThreeBackground from "./components/ThreeBackground";
+import HiddenYouTubeAudio from "./components/HiddenYouTubeAudio";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -31,6 +33,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [is3DActive, setIs3DActive] = useState(false);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(true);
   const [currentDateString, setCurrentDateString] = useState("");
   const heroRef = useRef<HTMLDivElement>(null);
   const projectsRef = useRef<HTMLDivElement>(null);
@@ -196,6 +199,7 @@ export default function App() {
     >
       <CustomCursor />
       <ThreeBackground theme={theme} activeTab={activeTab} is3DActive={is3DActive} setIs3DActive={setIs3DActive} />
+      <HiddenYouTubeAudio isPlaying={isMusicPlaying} setIsPlaying={setIsMusicPlaying} />
       
       {/* 🔮 MESH BACKGROUND ORBS */}
       <div className="mesh-container">

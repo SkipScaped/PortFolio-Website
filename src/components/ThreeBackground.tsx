@@ -214,6 +214,67 @@ function DraggableNode({
   );
 }
 
+// 🌊 WAVY LIQUID GLASS PLANE COMPONENT: Computes complex organic ripples and realistic physical metal/glass transmission
+function WavyGlassPlane({ theme, activeTab }: { theme: 'dark' | 'light'; activeTab: string }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const geoRef = useRef<THREE.PlaneGeometry>(null);
+  const isDark = theme === 'dark';
+
+  const [originalPositions, setOriginalPositions] = useState<Float32Array | null>(null);
+
+  useEffect(() => {
+    if (geoRef.current) {
+      const posAttr = geoRef.current.attributes.position as THREE.BufferAttribute;
+      setOriginalPositions(new Float32Array(posAttr.array));
+    }
+  }, [geoRef.current]);
+
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+    if (meshRef.current && originalPositions) {
+      const geo = meshRef.current.geometry;
+      const posAttr = geo.attributes.position as THREE.BufferAttribute;
+      const count = posAttr.count;
+
+      for (let i = 0; i < count; i++) {
+        const x = originalPositions[i * 3];
+        const y = originalPositions[i * 3 + 1];
+
+        // Multi-layered fluid sinusoids matching the physical gold ripples in the photo
+        const z = Math.sin(x * 0.28 + time * 0.55) * Math.cos(y * 0.32 + time * 0.45) * 1.15
+                + Math.sin(x * 0.55 - y * 0.48 + time * 0.85) * 0.48
+                + Math.cos(Math.sqrt(x * x + y * y) * 0.25 - time * 0.35) * 0.55;
+
+        posAttr.setZ(i, z);
+      }
+      posAttr.needsUpdate = true;
+      geo.computeVertexNormals();
+    }
+  });
+
+  // Gorgeous reflective liquid shader values
+  const glassColor = isDark ? new THREE.Color('#080d1a') : new THREE.Color('#fffbeb'); // beautiful golden light sand/gold champagne
+
+  return (
+    <mesh ref={meshRef} position={[0, -0.5, -4.8]} rotation={[-Math.PI / 5.2, 0, 0]}>
+      <planeGeometry ref={geoRef} args={[35, 30, 96, 96]} />
+      <meshPhysicalMaterial
+        color={glassColor}
+        roughness={isDark ? 0.16 : 0.015} // extremely mirror-smooth specular in light mode
+        metalness={isDark ? 0.85 : 0.68} // beautiful metallic glaze matching the chrome/gold liquid photo
+        transmission={isDark ? 0.15 : 0.48} // rich refraction bending
+        thickness={isDark ? 0.6 : 3.5}
+        ior={isDark ? 1.55 : 1.98} // high indices elevate crystal-like glistening
+        clearcoat={1.0}
+        clearcoatRoughness={isDark ? 0.08 : 0.01}
+        reflectivity={1.0}
+        transparent
+        opacity={isDark ? 0.85 : 0.98}
+      />
+    </mesh>
+  );
+}
+
 // ☄️ Scene Content living natively inside R3F Canvas context
 function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
   const { camera, size } = useThree();
@@ -664,12 +725,12 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
 
   return (
     <>
-      <ambientLight ref={ambientLightRef} intensity={isDark ? 0.65 : 1.35} color={isDark ? '#111827' : '#f8fafc'} />
-      <pointLight ref={keyLightRef} position={[4, 6, 2]} intensity={isDark ? 5.5 : 3.5} color={isDark ? '#22d3ee' : '#4f46e5'} distance={25} />
-      <pointLight ref={fillLightRef} position={[-6, -4, -3]} intensity={isDark ? 2.5 : 1.5} color={isDark ? '#ec4899' : '#0ea5e9'} distance={20} />
+      <ambientLight ref={ambientLightRef} intensity={isDark ? 0.65 : 1.6} color={isDark ? '#111827' : '#fffbeb'} />
+      <pointLight ref={keyLightRef} position={[4, 6, 2]} intensity={isDark ? 5.5 : 9.5} color={isDark ? '#22d3ee' : '#eab308'} distance={25} />
+      <pointLight ref={fillLightRef} position={[-6, -4, -3]} intensity={isDark ? 2.5 : 4.5} color={isDark ? '#ec4899' : '#ca8a04'} distance={20} />
 
       {/* 💡 INTERACTIVE CURSOR HIGHLIGHT: Drives high-gloss liquid glass specular reflections */}
-      <pointLight ref={cursorLightRef} intensity={isDark ? 3.5 : 7.0} color={isDark ? '#22d3ee' : '#4f46e5'} distance={12} />
+      <pointLight ref={cursorLightRef} intensity={isDark ? 3.5 : 8.0} color={isDark ? '#22d3ee' : '#fef08a'} distance={12} />
 
       {/* ☄️ Background Stardust Fields */}
       <points ref={stardustRef}>
@@ -983,13 +1044,8 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
         </group>
       </DraggableNode>
 
-      {/* 🧭 Horizon cyber grids */}
-      <gridHelper 
-        ref={gridHelperRef}
-        args={[24, 24, isDark ? '#22d3ee' : '#4f46e5', isDark ? '#111827' : '#cbd5e1']} 
-        position={[0, -2.0, -2.0]}
-        rotation={[Math.PI / 2.5, 0, 0]}
-      />
+      {/* 🌊 DYNAMIC BACKGROUND INTERACTIVE LIQUID GLASS WAVE MECHANISM */}
+      <WavyGlassPlane theme={theme} activeTab={activeTab} />
     </>
   );
 }
@@ -1002,7 +1058,7 @@ export default function ThreeBackground({ theme, activeTab, is3DActive, setIs3DA
         className={`fixed inset-0 transition-all duration-700 overflow-hidden
           ${is3DActive 
             ? "z-30 pointer-events-auto bg-slate-950/25 backdrop-blur-[6px]" 
-            : "-z-20 pointer-events-none bg-transparent"}`}
+            : "-z-10 pointer-events-none bg-transparent"}`}
       >
         <Canvas
           camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 0, 3] }}
