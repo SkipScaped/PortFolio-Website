@@ -11,7 +11,8 @@ import { motion, AnimatePresence } from "motion/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AOS from "aos";
-import ThreeDCard from "./components/ThreeDCard";
+import ThreeDCard, { ThreeDCardItem } from "./components/ThreeDCard";
+import Project3DModal from "./components/Project3DModal";
 import GameSandbox from "./components/GameSandbox";
 import BabylonSandbox from "./components/BabylonSandbox";
 import AICompanion from "./components/AICompanion";
@@ -56,6 +57,7 @@ export default function App() {
   // Default is ALWAYS Dark Mode!
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [is3DActive, setIs3DActive] = useState(false);
+  const [inspectingProject, setInspectingProject] = useState<ProjectItem | null>(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(true);
   const [currentDateString, setCurrentDateString] = useState("");
   const heroRef = useRef<HTMLDivElement>(null);
@@ -531,7 +533,7 @@ export default function App() {
       </header>
 
       {/* 🌟 MAIN APP CONTAINER */}
-      <main className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-8 flex-1 flex flex-col">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-8 flex-1 flex flex-col relative z-10">
 
         {/* Tab Page 1: Home Base */}
         {activeTab === "home" && (
@@ -641,6 +643,18 @@ export default function App() {
                 >
                   <PhoneCall className="h-4 w-4" /> WhatsApp
                 </a>
+
+                {/* 3D Model Inspector Trigger */}
+                <button
+                  onClick={() => {
+                    playBeep(780);
+                    setInspectingProject(showcaseProjects[0]);
+                  }}
+                  className="flex items-center gap-2 rounded-2xl px-5 py-3.5 font-orbitron text-xs font-black tracking-wider bg-gradient-to-r from-teal-500/20 via-indigo-500/20 to-purple-500/20 hover:from-teal-500/30 hover:to-purple-500/30 text-teal-300 border border-teal-400/40 shadow-lg shadow-teal-500/10 active:scale-95 transition-all cursor-pointer"
+                >
+                  <Box className="h-4 w-4 text-teal-400" />
+                  <span>3D ARTIFACT INSPECTOR</span>
+                </button>
               </div>
             </section>
 
@@ -663,7 +677,7 @@ export default function App() {
               <ThreeDCard glowColor="indigo">
                 <div className="liquid-glass p-8 rounded-3xl border border-indigo-500/30 relative overflow-hidden bg-gradient-to-r from-slate-900/80 via-indigo-950/20 to-slate-900/80">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-start gap-4">
+                    <ThreeDCardItem translateZ={40} className="flex items-start gap-4">
                       <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
                         <Building2 className="h-7 w-7" />
                       </div>
@@ -683,16 +697,16 @@ export default function App() {
                           Worked as a software engineering intern for 6 months at <strong>Enigmatix</strong>, contributing to commercial software development, API endpoints, backend architectures, performance profiling, and scalable UI modular design.
                         </p>
                       </div>
-                    </div>
+                    </ThreeDCardItem>
 
-                    <div className="flex flex-wrap lg:flex-col gap-2 shrink-0">
+                    <ThreeDCardItem translateZ={30} className="flex flex-wrap lg:flex-col gap-2 shrink-0">
                       {["Full-Stack Engineering", "API Microservices", "Performance Profiling", "Team Code Audits"].map((skill, i) => (
                         <div key={i} className="flex items-center gap-2 text-[11px] font-mono text-slate-300 px-3 py-1 rounded-xl bg-white/5 border border-white/10">
                           <CheckCircle2 className="h-3.5 w-3.5 text-teal-400" />
                           <span>{skill}</span>
                         </div>
                       ))}
-                    </div>
+                    </ThreeDCardItem>
                   </div>
                 </div>
               </ThreeDCard>
@@ -727,32 +741,36 @@ export default function App() {
                       className="liquid-glass h-full p-7 rounded-3xl flex flex-col justify-between group"
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+                        <ThreeDCardItem translateZ={35} className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
                           <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10">
                             {plan.icon}
                           </div>
                           <span className="font-mono text-[10px] font-bold text-teal-400 uppercase tracking-wider">
                             {plan.badge}
                           </span>
-                        </div>
+                        </ThreeDCardItem>
 
-                        <h4 className="font-orbitron text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors mb-2.5">
-                          {plan.title}
-                        </h4>
+                        <ThreeDCardItem translateZ={45}>
+                          <h4 className="font-orbitron text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors mb-2.5">
+                            {plan.title}
+                          </h4>
+                        </ThreeDCardItem>
 
-                        <p className="font-sans text-xs text-slate-300 leading-relaxed mb-6">
-                          {plan.desc}
-                        </p>
+                        <ThreeDCardItem translateZ={25}>
+                          <p className="font-sans text-xs text-slate-300 leading-relaxed mb-6">
+                            {plan.desc}
+                          </p>
+                        </ThreeDCardItem>
                       </div>
 
-                      <div className="space-y-1.5 pt-3 border-t border-white/10">
+                      <ThreeDCardItem translateZ={30} className="space-y-1.5 pt-3 border-t border-white/10">
                         {plan.focus.map((item, fIdx) => (
                           <div key={fIdx} className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
                             <div className="h-1 w-1 rounded-full bg-teal-400" />
                             <span>{item}</span>
                           </div>
                         ))}
-                      </div>
+                      </ThreeDCardItem>
                     </div>
                   </ThreeDCard>
                 ))}
@@ -783,7 +801,7 @@ export default function App() {
                     <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-amber-500/20 via-orange-500/10 to-transparent rounded-bl-full pointer-events-none" />
 
                     <div>
-                      <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
+                      <ThreeDCardItem translateZ={35} className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
                         <div className="flex items-center gap-2">
                           <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                             <Zap className="h-5 w-5" />
@@ -798,43 +816,64 @@ export default function App() {
                           </div>
                         </div>
 
-                        <a
-                          href={overdriveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => playBeep(700)}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-mono text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all hover:scale-105"
-                        >
-                          <span>VISIT_LIVE</span> <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              playBeep(750);
+                              setInspectingProject(showcaseProjects[0]);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[10px] font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 transition-all hover:scale-105 cursor-pointer"
+                            title="Inspect 3D Turbine Model"
+                          >
+                            <Box className="h-3.5 w-3.5 text-amber-400" />
+                            <span>3D_INSPECT</span>
+                          </button>
 
-                      <h4 className="font-orbitron text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 mb-2">
-                        OverDrive
-                      </h4>
-                      <p className="font-mono text-xs text-amber-400/90 font-bold mb-2">
-                        Italian Energy Powder & Drink Company Startup
-                      </p>
-                      <p className="font-sans text-sm text-slate-300 leading-relaxed mb-6">
-                        As <strong>Lead Developer</strong>, engineered the digital platform for OverDrive, an Italian energy powder and drink startup. Featuring high-voltage visual assets, immersive product showcase physics, responsive cart checkout, and optimized edge delivery.
-                      </p>
+                          <a
+                            href={overdriveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => playBeep(700)}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-mono text-[10px] font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all hover:scale-105"
+                          >
+                            <span>LIVE</span> <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </ThreeDCardItem>
+
+                      <ThreeDCardItem translateZ={45}>
+                        <h4 className="font-orbitron text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-rose-400 mb-2">
+                          OverDrive
+                        </h4>
+                        <p className="font-mono text-xs text-amber-400/90 font-bold mb-2">
+                          Italian Energy Powder & Drink Company Startup
+                        </p>
+                      </ThreeDCardItem>
+
+                      <ThreeDCardItem translateZ={25}>
+                        <p className="font-sans text-sm text-slate-300 leading-relaxed mb-6">
+                          As <strong>Lead Developer</strong>, engineered the digital platform for OverDrive, an Italian energy powder and drink startup. Featuring high-voltage visual assets, immersive product showcase physics, responsive cart checkout, and optimized edge delivery.
+                        </p>
+                      </ThreeDCardItem>
                     </div>
 
                     <div>
-                      <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-                        {["Lead Developer", "Italian Startup", "Energy Powder & Drink", "Three.js 3D", "Next.js", "Edge Fast"].map((tag, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                      <ThreeDCardItem translateZ={30}>
+                        <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                          {["Lead Developer", "Italian Startup", "Energy Powder & Drink", "Three.js 3D", "Next.js", "Edge Fast"].map((tag, i) => (
+                            <span key={i} className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
 
-                      <div className="mt-5 flex items-center justify-between font-mono text-[10px] text-slate-400">
-                        <span>LIVE URL: overdrive-568529096082.us-west1.run.app</span>
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> VERIFIED
-                        </span>
-                      </div>
+                        <div className="mt-5 flex items-center justify-between font-mono text-[10px] text-slate-400">
+                          <span>LIVE URL: overdrive-568529096082.us-west1.run.app</span>
+                          <span className="text-emerald-400 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> VERIFIED
+                          </span>
+                        </div>
+                      </ThreeDCardItem>
                     </div>
                   </div>
                 </ThreeDCard>
@@ -845,7 +884,7 @@ export default function App() {
                     <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-teal-500/20 via-indigo-500/10 to-transparent rounded-bl-full pointer-events-none" />
 
                     <div>
-                      <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
+                      <ThreeDCardItem translateZ={35} className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
                         <div className="flex items-center gap-2">
                           <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
                             <Award className="h-5 w-5" />
@@ -860,43 +899,64 @@ export default function App() {
                           </div>
                         </div>
 
-                        <a
-                          href={levinoAuthinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => playBeep(700)}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-mono text-xs font-bold bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 transition-all hover:scale-105"
-                        >
-                          <span>VISIT_AGENCY</span> <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              playBeep(750);
+                              setInspectingProject(showcaseProjects[1]);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[10px] font-bold bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-400/30 transition-all hover:scale-105 cursor-pointer"
+                            title="Inspect 3D Tesseract Model"
+                          >
+                            <Box className="h-3.5 w-3.5 text-teal-400" />
+                            <span>3D_INSPECT</span>
+                          </button>
 
-                      <h4 className="font-orbitron text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-400 to-indigo-400 mb-2">
-                        LevinoAuthin
-                      </h4>
-                      <p className="font-mono text-xs text-teal-400/90 font-bold mb-2">
-                        Premium Software Solutions & Enterprise Automation Agency
-                      </p>
-                      <p className="font-sans text-sm text-slate-300 leading-relaxed mb-6">
-                        Founded and directed by Aaliyan as <strong>C.E.O</strong>, LevinoAuthin delivers full-stack web platforms, automated <strong>n8n workflow pipelines</strong>, custom AI integrations, and high-conversion client systems.
-                      </p>
+                          <a
+                            href={levinoAuthinUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => playBeep(700)}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 transition-all hover:scale-105"
+                          >
+                            <span>LIVE</span> <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </ThreeDCardItem>
+
+                      <ThreeDCardItem translateZ={45}>
+                        <h4 className="font-orbitron text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-400 to-indigo-400 mb-2">
+                          LevinoAuthin
+                        </h4>
+                        <p className="font-mono text-xs text-teal-400/90 font-bold mb-2">
+                          Premium Software Solutions & Enterprise Automation Agency
+                        </p>
+                      </ThreeDCardItem>
+
+                      <ThreeDCardItem translateZ={25}>
+                        <p className="font-sans text-sm text-slate-300 leading-relaxed mb-6">
+                          Founded and directed by Aaliyan as <strong>C.E.O</strong>, LevinoAuthin delivers full-stack web platforms, automated <strong>n8n workflow pipelines</strong>, custom AI integrations, and high-conversion client systems.
+                        </p>
+                      </ThreeDCardItem>
                     </div>
 
                     <div>
-                      <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
-                        {["C.E.O", "Software Solutions", "n8n Automation", "TypeScript", "Next.js", "AI Integration"].map((tag, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-teal-500/10 text-teal-300 border border-teal-500/20">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                      <ThreeDCardItem translateZ={30}>
+                        <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                          {["C.E.O", "Software Solutions", "n8n Automation", "TypeScript", "Next.js", "AI Integration"].map((tag, i) => (
+                            <span key={i} className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-teal-500/10 text-teal-300 border border-teal-500/20">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
 
-                      <div className="mt-5 flex items-center justify-between font-mono text-[10px] text-slate-400">
-                        <span>LIVE URL: levinoauthin.ai.studio</span>
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> ACTIVE
-                        </span>
-                      </div>
+                        <div className="mt-5 flex items-center justify-between font-mono text-[10px] text-slate-400">
+                          <span>LIVE URL: levinoauthin.ai.studio</span>
+                          <span className="text-emerald-400 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> ACTIVE
+                          </span>
+                        </div>
+                      </ThreeDCardItem>
                     </div>
                   </div>
                 </ThreeDCard>
@@ -1037,41 +1097,60 @@ export default function App() {
                       className="liquid-glass h-full p-7 rounded-3xl flex flex-col justify-between group"
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
+                        <ThreeDCardItem translateZ={35} className="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
                           <span className="font-mono text-[10px] font-bold text-teal-400 uppercase tracking-widest">
                             {proj.badge}
                           </span>
-                          <a
-                            href={proj.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => playBeep(700)}
-                            className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5 text-[10px] font-mono transition-all"
-                          >
-                            <span>LIVE_VIEW</span> <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                playBeep(750);
+                                setInspectingProject(proj);
+                              }}
+                              className="text-teal-300 hover:text-white bg-teal-500/10 hover:bg-teal-500/25 px-2.5 py-1 rounded-full border border-teal-500/30 flex items-center gap-1 text-[10px] font-mono transition-all cursor-pointer"
+                              title="Inspect 3D Artifact Model"
+                            >
+                              <Box className="h-3 w-3 text-teal-400" />
+                              <span>3D</span>
+                            </button>
+                            <a
+                              href={proj.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => playBeep(700)}
+                              className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-full border border-white/10 flex items-center gap-1 text-[10px] font-mono transition-all"
+                            >
+                              <span>LIVE</span> <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                        </ThreeDCardItem>
 
-                        <h4 className="font-orbitron text-lg font-bold tracking-wide text-slate-100 group-hover:text-teal-300 transition-colors mb-2">
-                          {proj.title}
-                        </h4>
+                        <ThreeDCardItem translateZ={45}>
+                          <h4 className="font-orbitron text-lg font-bold tracking-wide text-slate-100 group-hover:text-teal-300 transition-colors mb-2">
+                            {proj.title}
+                          </h4>
+                        </ThreeDCardItem>
                         
-                        <p className="font-sans text-xs text-slate-300 leading-relaxed mb-5">
-                          {proj.desc}
-                        </p>
+                        <ThreeDCardItem translateZ={25}>
+                          <p className="font-sans text-xs text-slate-300 leading-relaxed mb-5">
+                            {proj.desc}
+                          </p>
+                        </ThreeDCardItem>
                       </div>
 
                       <div>
-                        <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/10">
-                          {proj.tags.map((tag, tIdx) => (
-                            <span
-                              key={tIdx}
-                              className="font-mono text-[9px] px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                        <ThreeDCardItem translateZ={30}>
+                          <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/10">
+                            {proj.tags.map((tag, tIdx) => (
+                              <span
+                                key={tIdx}
+                                className="font-mono text-[9px] px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </ThreeDCardItem>
                       </div>
                     </div>
                   </ThreeDCard>
@@ -1308,7 +1387,7 @@ export default function App() {
       </main>
 
       {/* 🚀 HIGH-TECH LIQUID GLASS FOOTER */}
-      <footer className="mt-16 border-t border-white/10 pt-8 px-4 sm:px-8 select-none font-mono text-[11px] text-slate-400">
+      <footer className="mt-16 border-t border-white/10 pt-8 px-4 sm:px-8 select-none font-mono text-[11px] text-slate-400 relative z-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-3 font-bold">
             <div className="h-8 w-8 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center">
@@ -1339,6 +1418,14 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* 🔮 3D ARTIFACT INSPECTOR MODAL */}
+      <Project3DModal
+        isOpen={!!inspectingProject}
+        onClose={() => setInspectingProject(null)}
+        project={inspectingProject}
+        theme={theme}
+      />
     </div>
   );
 }

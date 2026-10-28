@@ -3,12 +3,18 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import ParticleVortex from './ParticleVortex';
+import NeuralConstellation from './NeuralConstellation';
+import FloatingHoloCrystals from './FloatingHoloCrystals';
+import QuantumGyroRings from './QuantumGyroRings';
 
 interface ThreeBackgroundProps {
   theme: "dark" | "light";
   activeTab: "home" | "sandbox" | "proposal" | "companion";
   is3DActive?: boolean;
   setIs3DActive?: (val: boolean) => void;
+  turbulenceMode?: "ambient" | "surge" | "quantum";
+  setTurbulenceMode?: (mode: "ambient" | "surge" | "quantum") => void;
 }
 
 // 🔊 Interactive Audio Synth for High-Fidelity Cyberpunk Feedback
@@ -276,9 +282,24 @@ function WavyGlassPlane({ theme, activeTab }: { theme: 'dark' | 'light'; activeT
 }
 
 // ☄️ Scene Content living natively inside R3F Canvas context
-function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
+function SceneContent({ 
+  theme, 
+  activeTab, 
+  is3DActive,
+  turbulenceMode = "ambient"
+}: ThreeBackgroundProps) {
   const { camera, size } = useThree();
   const isDark = theme === "dark";
+
+  // Scroll parallax tracker for continuous floating motion across all portfolio sections
+  const scrollYRef = useRef(0);
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollYRef.current = window.scrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Geometries references
   const mainCoreGroupRef = useRef<THREE.Group>(null);
@@ -711,15 +732,22 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
       gridHelperRef.current.rotation.z = elapsedTime * 0.05;
     }
 
-    // 5. Parallax coordinate dampener (Enabled when NOT dragging in sandbox view)
+    // 5. Parallax coordinate dampener & Continuous Scroll Tracking across all page sections
     if (!is3DActive) {
-      const targetParallaxX = pointer.x * 0.45;
-      const targetParallaxY = pointer.y * 0.45;
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const scrollProgress = Math.min(1, Math.max(0, scrollYRef.current / maxScroll));
       
+      const targetParallaxX = pointer.x * 0.45;
+      // Pan camera downward across sections to give continuous immersion
+      const scrollCamY = -scrollProgress * 2.5;
       const baselineY = (activeTab === "sandbox" ? 0.35 : activeTab === "proposal" ? -0.2 : activeTab === "companion" ? 0.1 : 0);
-      camera.position.x += (targetParallaxX - camera.position.x) * 0.04;
-      camera.position.y += (targetParallaxY - baselineY - camera.position.y) * 0.04;
-      camera.lookAt(0, 0, -2);
+      const targetParallaxY = (pointer.y * 0.35) + scrollCamY - baselineY;
+      
+      camera.position.x += (targetParallaxX - camera.position.x) * 0.045;
+      camera.position.y += (targetParallaxY - camera.position.y) * 0.045;
+      // Gentle subtle roll as user scrolls
+      camera.rotation.z = Math.sin(scrollProgress * Math.PI) * 0.035;
+      camera.lookAt(0, camera.position.y * 0.35, -3.5);
     }
   });
 
@@ -731,6 +759,33 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
 
       {/* 💡 INTERACTIVE CURSOR HIGHLIGHT: Drives high-gloss liquid glass specular reflections */}
       <pointLight ref={cursorLightRef} intensity={isDark ? 3.5 : 8.0} color={isDark ? '#22d3ee' : '#fef08a'} distance={12} />
+
+      {/* 🌀 3D PARTICLE VORTEX ACCRETION DISK (Continuous Floating Background) */}
+      <ParticleVortex 
+        theme={theme} 
+        turbulenceMode={turbulenceMode} 
+        is3DActive={is3DActive} 
+      />
+
+      {/* 🧠 NEURAL NETWORK SYNAPSE CONSTELLATION (Dynamic Synapses & Action Potentials) */}
+      <NeuralConstellation 
+        theme={theme} 
+        neuralSurge={turbulenceMode === 'surge' || turbulenceMode === 'quantum'} 
+        is3DActive={is3DActive} 
+      />
+
+      {/* 💎 3D FLOATING HOLOGRAPHIC CRYSTALS (Continuous Floating Across All Sections) */}
+      <FloatingHoloCrystals 
+        theme={theme} 
+        turbulenceMode={turbulenceMode} 
+      />
+
+      {/* 🪐 3D CONCENTRIC QUANTUM GYROSCOPE RINGS (Axis Precession & Orbital Markers) */}
+      <QuantumGyroRings 
+        theme={theme} 
+        turbulenceMode={turbulenceMode} 
+        is3DActive={is3DActive} 
+      />
 
       {/* ☄️ Background Stardust Fields */}
       <points ref={stardustRef}>
@@ -1051,35 +1106,84 @@ function SceneContent({ theme, activeTab, is3DActive }: ThreeBackgroundProps) {
 }
 
 // Parent container hosting the WebGL setups and managing foreground/background container swap triggers
-export default function ThreeBackground({ theme, activeTab, is3DActive, setIs3DActive }: ThreeBackgroundProps) {
+export default function ThreeBackground({ 
+  theme, 
+  activeTab, 
+  is3DActive, 
+  setIs3DActive,
+  turbulenceMode: externalTurbulenceMode,
+  setTurbulenceMode: externalSetTurbulenceMode
+}: ThreeBackgroundProps) {
+  const [internalMode, setInternalMode] = useState<"ambient" | "surge" | "quantum">("ambient");
+  const currentMode = externalTurbulenceMode || internalMode;
+  const setMode = externalSetTurbulenceMode || setInternalMode;
+
   return (
     <>
       <div 
         className={`fixed inset-0 transition-all duration-700 overflow-hidden
           ${is3DActive 
-            ? "z-30 pointer-events-auto bg-slate-950/25 backdrop-blur-[6px]" 
-            : "-z-10 pointer-events-none bg-transparent"}`}
+            ? "z-50 pointer-events-auto bg-slate-950/40 backdrop-blur-[5px]" 
+            : "z-0 pointer-events-none bg-transparent"}`}
       >
         <Canvas
           camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 0, 3] }}
           dpr={[1, 2]}
           style={{ pointerEvents: is3DActive ? 'auto' : 'none' }}
         >
-          <SceneContent theme={theme} activeTab={activeTab} is3DActive={is3DActive || false} />
+          <SceneContent 
+            theme={theme} 
+            activeTab={activeTab} 
+            is3DActive={is3DActive || false} 
+            turbulenceMode={currentMode}
+          />
         </Canvas>
 
         {/* Floating Custom HUD console available in interactive full screen mode */}
         {is3DActive && (
           <div className="absolute inset-x-0 bottom-8 px-4 flex justify-center pointer-events-none select-none">
-            <div className="w-full max-w-sm rounded-2xl bg-slate-950/95 border border-teal-500/30 p-4 shadow-2xl backdrop-blur-md flex flex-col gap-3 pointer-events-auto text-slate-100 font-mono text-[10px] items-center text-center animate-bounce-slow">
-              <div className="flex items-center gap-1 text-teal-400">
-                <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
-                <span className="font-orbitron tracking-widest font-bold uppercase">3D CYBER LABORATORY</span>
+            <div className="w-full max-w-md rounded-2xl bg-slate-950/95 border border-teal-500/30 p-4 shadow-2xl backdrop-blur-md flex flex-col gap-3 pointer-events-auto text-slate-100 font-mono text-[10px] items-center text-center">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-1.5 text-teal-400">
+                  <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+                  <span className="font-orbitron tracking-widest font-bold uppercase text-[11px]">3D CYBER LABORATORY</span>
+                </div>
+                <span className="text-[9px] text-slate-400 font-mono">
+                  1,600 VORTEX // 95 SYNAPSES
+                </span>
               </div>
-              <p className="text-slate-400 text-[9px] max-w-xs">
-                Grab, fling, and flick target modules! Click shapes to trigger high-velocity stardust fusion shocks.
+              
+              <p className="text-slate-400 text-[9px] max-w-sm">
+                Particle Vortex & Neural Constellation running in continuous accretion. Grab, fling, and flick target modules!
               </p>
-              <div className="w-full h-px bg-teal-500/10 my-1" />
+
+              {/* Turbulence & Synapse Mode Switcher */}
+              <div className="flex items-center gap-1.5 w-full bg-slate-900/90 p-1.5 rounded-xl border border-teal-500/20">
+                <span className="text-[8px] font-bold text-teal-400 uppercase tracking-widest pl-1">MODE:</span>
+                {[
+                  { id: "ambient", label: "AMBIENT VORTEX" },
+                  { id: "surge", label: "NEURAL SURGE" },
+                  { id: "quantum", label: "QUANTUM DRIVE" },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setMode(m.id as any);
+                      playCyberSynth(m.id === 'quantum' ? 780 : m.id === 'surge' ? 620 : 480, 'sine', 0.12, true);
+                    }}
+                    className={`flex-1 py-1 rounded-lg text-[8px] font-bold font-orbitron transition-all cursor-pointer ${
+                      currentMode === m.id
+                        ? "bg-teal-500 text-slate-950 shadow-md shadow-teal-500/40"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="w-full h-px bg-teal-500/10 my-0.5" />
+              
               <button
                 onClick={() => {
                   if (setIs3DActive) {
@@ -1092,6 +1196,39 @@ export default function ThreeBackground({ theme, activeTab, is3DActive, setIs3DA
                 RETURN TO PROTOCOL MODULES
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Floating Mini 3D Status Indicator & Turbulence Switcher when browsing */}
+        {!is3DActive && (
+          <div className="fixed bottom-4 left-4 z-20 pointer-events-auto select-none hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl liquid-glass border border-white/10 text-[9px] font-mono backdrop-blur-md shadow-lg group hover:border-teal-500/30 transition-all">
+            <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-ping" />
+            <span className="text-slate-400">3D VORTEX & SYNAPSE:</span>
+            <button
+              onClick={() => {
+                const modes: ("ambient" | "surge" | "quantum")[] = ["ambient", "surge", "quantum"];
+                const nextIdx = (modes.indexOf(currentMode) + 1) % modes.length;
+                const nextMode = modes[nextIdx];
+                setMode(nextMode);
+                playCyberSynth(nextMode === 'quantum' ? 780 : nextMode === 'surge' ? 620 : 480, 'sine', 0.1, true);
+              }}
+              className="text-teal-300 font-bold hover:text-white uppercase px-1.5 py-0.5 rounded bg-teal-500/10 border border-teal-500/20 hover:border-teal-500/40 transition-colors cursor-pointer"
+              title="Click to cycle 3D vortex turbulence & neural excitation"
+            >
+              {currentMode}
+            </button>
+            <button
+              onClick={() => {
+                if (setIs3DActive) {
+                  setIs3DActive(true);
+                  playCyberSynth(880, 'sawtooth', 0.15, true);
+                }
+              }}
+              className="text-indigo-400 hover:text-indigo-300 font-bold ml-1 border-l border-white/10 pl-2 transition-colors cursor-pointer"
+              title="Open full interactive 3D Space Laboratory"
+            >
+              EXPAND LAB ↗
+            </button>
           </div>
         )}
       </div>
